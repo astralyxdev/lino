@@ -1,6 +1,6 @@
 $ lino changes --since 0 --path check.go --direct
 exit 0
 -- stdout --
-next 0
+2  moved     wallet/check.go  from wallet/validate.go  v=3ee51f
+next 2
 -- stderr --
-no changes

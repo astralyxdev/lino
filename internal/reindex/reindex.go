@@ -5,8 +5,6 @@ package reindex
 
 import (
 	"context"
-	"errors"
-	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -40,12 +38,11 @@ type Opener func(ctx context.Context, root string) (t *Target, release func(), e
 // (direct mode); a live process replaces it with one returning its open index.
 var Open Opener = Direct
 
-// Direct opens <root>/.lino/index.db if it exists, with fresh ignore rules and
-// the root's configured size limit.
+// Direct opens <root>/.lino/index.db with fresh ignore rules and the root's
+// configured size limit. An index that is missing (deleted, or never built)
+// is built with a full reconcile first, as search and ls do, so the change
+// log and history, which live beside it, record the mutation.
 func Direct(ctx context.Context, root string) (*Target, func(), error) {
-	if _, err := os.Stat(index.Path(root)); errors.Is(err, fs.ErrNotExist) {
-		return nil, nil, nil
-	}
 	cfg, err := config.Load(root)
 	if err != nil {
 		return nil, nil, err
@@ -57,6 +54,12 @@ func Direct(ctx context.Context, root string) (*Target, func(), error) {
 	db, err := index.Open(ctx, root)
 	if err != nil {
 		return nil, nil, err
+	}
+	if db.Rebuilt {
+		if _, err := db.Reconcile(ctx, rules, cfg.MaxFileSize); err != nil {
+			db.Close()
+			return nil, nil, err
+		}
 	}
 	return &Target{DB: db, Rules: rules, MaxSize: cfg.MaxFileSize}, func() { db.Close() }, nil
 }

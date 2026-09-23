@@ -26,7 +26,7 @@ func (w *Workspace) Pipeline() *mutate.Pipeline {
 	if p, ok := pipelines.Load(key); ok {
 		return p.(*mutate.Pipeline)
 	}
-	p := &mutate.Pipeline{Root: w.Root, MaxSize: w.Config.MaxFileSize, Hooks: []mutate.Hook{runHooks}, Check: runCheck}
+	p := &mutate.Pipeline{Root: w.Root, MaxSize: w.Config.MaxFileSize, Hooks: []mutate.Hook{runHooks}, Check: runCheck, Lock: mutate.RootLock(key)}
 	actual, _ := pipelines.LoadOrStore(key, p)
 	return actual.(*mutate.Pipeline)
 }

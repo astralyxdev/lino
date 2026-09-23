@@ -2,3 +2,4 @@ bin/
 dist/
 /lino
 .lino/
+bench/.corpus/

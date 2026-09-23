@@ -1,0 +1,210 @@
+{
+  "started": "2026-09-23T17:57:19.548649Z",
+  "finished": "2026-09-23T17:57:49.56631Z",
+  "machine": {
+    "os": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M4 Max",
+    "cpus": 16,
+    "go_version": "go1.26.1"
+  },
+  "lino": {
+    "version": "lino dev (none)",
+    "commit": "3f5f2b1"
+  },
+  "corpus": {
+    "source": "/Users/nikitapredein/dev/astralyx/agents-platform/lino/bench/.corpus/go-3901409b5d0fb7c85a3e6730a59943cc93b2835c.tar.gz#src",
+    "pin": "golang/go@3901409b5d0fb7c85a3e6730a59943cc93b2835c",
+    "files": 1878,
+    "lines": 1000911,
+    "bytes": 29505172,
+    "digest": "011e767e31ce9b300e5f3c53a9c3403516168306cea1d090cf92ebf532ebc858"
+  },
+  "metrics": [
+    {
+      "scenario": "setup",
+      "name": "init wall time",
+      "value": 3.312905625,
+      "unit": "s",
+      "target": {
+        "op": "\u003c",
+        "value": 30
+      },
+      "pass": true,
+      "note": "1878 files indexed"
+    },
+    {
+      "scenario": "index-size",
+      "name": "source size",
+      "value": 28.138324737548828,
+      "unit": "MB",
+      "note": "1878 files, 1000911 lines"
+    },
+    {
+      "scenario": "index-size",
+      "name": "index size on disk",
+      "value": 44.64454650878906,
+      "unit": "MB",
+      "note": "index.db with -wal and -shm"
+    },
+    {
+      "scenario": "index-size",
+      "name": "index / source",
+      "value": 1.5866099679066437,
+      "unit": "x"
+    },
+    {
+      "scenario": "history-disk",
+      "name": "history growth per 1,000 edits",
+      "value": 3.5491943359375,
+      "unit": "MB",
+      "note": "1000 edits in 100 files, 1016 changes recorded; history.db with -wal and -shm, 0.9 -\u003e 4.5 MB"
+    },
+    {
+      "scenario": "history-disk",
+      "name": "history.db main file growth per 1,000 edits",
+      "value": 0.46875,
+      "unit": "MB",
+      "note": "without -wal and -shm, before any checkpoint of the rest"
+    },
+    {
+      "scenario": "history-disk",
+      "name": "history fragments per 1,000 edits",
+      "value": 0.11789608001708984,
+      "unit": "MB",
+      "note": "stored change fragments, from lino stats"
+    },
+    {
+      "scenario": "history-disk",
+      "name": "history total per 1,000 changes",
+      "value": 4.233956336975098,
+      "unit": "MB",
+      "note": "lino stats: whole db over all 1048 changes, fixed overhead included"
+    },
+    {
+      "scenario": "history-disk",
+      "name": "edit wall time, mean",
+      "value": 20.643439875,
+      "unit": "ms",
+      "note": "end-to-end, client process included"
+    },
+    {
+      "scenario": "history-disk",
+      "name": "edit internal errors",
+      "value": 11,
+      "unit": "calls",
+      "target": {
+        "op": "\u003c",
+        "value": 1
+      },
+      "pass": false,
+      "note": "first: index cmd/compile/internal/escape/call.go: database is locked (5) (SQLITE_BUSY)"
+    },
+    {
+      "scenario": "idle-rss",
+      "name": "idle RSS",
+      "value": 135.453125,
+      "unit": "MB",
+      "target": {
+        "op": "\u003c",
+        "value": 200
+      },
+      "pass": true,
+      "note": "max of 12 samples over 3 s, after 1125 calls"
+    },
+    {
+      "scenario": "idle-rss",
+      "name": "peak RSS",
+      "value": 135.453125,
+      "unit": "MB",
+      "note": "since start, from lino stats"
+    },
+    {
+      "scenario": "idle-rss",
+      "name": "Go heap",
+      "value": 61.63184356689453,
+      "unit": "MB",
+      "note": "from lino stats"
+    }
+  ],
+  "stats": {
+    "root": "/private/var/folders/y2/6n33y1gx56g0t_985fcy5tyc0000gn/T/lb-600277244/root",
+    "id": "4nhqs2",
+    "live": true,
+    "process": {
+      "pid": 25399,
+      "peak_rss_bytes": 142032896,
+      "heap_bytes": 64713400
+    },
+    "index": {
+      "files": 1848,
+      "lines": 993517,
+      "binary": 0,
+      "db_bytes": 52496344
+    },
+    "history": {
+      "changes": 1048,
+      "fragment_bytes": 198010,
+      "db_bytes": 4652728,
+      "bytes_per_1000_changes": 4439625
+    },
+    "since": "2026-09-23T21:57:23.70323+04:00",
+    "starts": 1,
+    "external": 27,
+    "calls": 1126,
+    "rates": [
+      {
+        "outcome": "conflict",
+        "count": 0,
+        "of": 1011,
+        "rate": 0
+      },
+      {
+        "outcome": "anchor_mismatch",
+        "count": 0,
+        "of": 1011,
+        "rate": 0
+      }
+    ],
+    "reindex": {
+      "count": 989,
+      "p50_us": 2539,
+      "p95_us": 10920,
+      "max_us": 47151
+    },
+    "commands": [
+      {
+        "name": "edit",
+        "count": 1011,
+        "p50_us": 13104,
+        "p95_us": 22644,
+        "max_us": 55649,
+        "outcomes": {
+          "internal": 11,
+          "ok": 11,
+          "updated": 989
+        }
+      },
+      {
+        "name": "read",
+        "count": 111,
+        "p50_us": 114,
+        "p95_us": 237,
+        "max_us": 649,
+        "outcomes": {
+          "ok": 111
+        }
+      },
+      {
+        "name": "stats",
+        "count": 4,
+        "p50_us": 1020,
+        "p95_us": 2135,
+        "max_us": 2135,
+        "outcomes": {
+          "ok": 4
+        }
+      }
+    ]
+  }
+}

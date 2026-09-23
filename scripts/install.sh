@@ -1,19 +1,19 @@
 #!/bin/sh
 # lino installer.
 #
-#   curl -fsSL https://raw.githubusercontent.com/astralyx/lino/main/scripts/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/astralyxdev/lino/main/scripts/install.sh | sh
 #
 # Environment:
 #   LINO_VERSION      release tag to install (default: latest release)
 #   LINO_INSTALL_DIR  target directory (default: /usr/local/bin as root, else ~/.local/bin)
-#   LINO_REPO         GitHub repository (default: astralyx/lino)
+#   LINO_REPO         GitHub repository (default: astralyxdev/lino)
 #   LINO_BASE_URL     download base holding the assets and checksums.txt
 #                     (default: https://github.com/$LINO_REPO/releases/download/$LINO_VERSION)
 #
 # The binary is verified against checksums.txt (SHA-256) before it is installed.
 set -eu
 
-REPO=${LINO_REPO:-astralyx/lino}
+REPO=${LINO_REPO:-astralyxdev/lino}
 VERSION=${LINO_VERSION:-}
 BASE_URL=${LINO_BASE_URL:-}
 INSTALL_DIR=${LINO_INSTALL_DIR:-}

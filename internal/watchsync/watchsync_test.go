@@ -324,3 +324,38 @@ func TestGitCheckout(t *testing.T) {
 		time.Sleep(20 * time.Millisecond)
 	}
 }
+
+// TestFlushWaitsForOwnWrite: a batch that sees lino's own write while the
+// write still holds the root lock must wait for its re-index, then find the
+// file unchanged, instead of reporting it as an external edit (a duplicate
+// change that breaks history reconstruction).
+func TestFlushWaitsForOwnWrite(t *testing.T) {
+	ctx := context.Background()
+	e := setup(t, map[string]string{"a.txt": "A\n"})
+	var lock sync.Mutex
+	var got []index.Update
+	s := New(e.db, e.rules, Options{Lock: &lock, OnUpdate: func(_ context.Context, u []index.Update) { got = append(got, u...) }})
+
+	lock.Lock() // an own mutation: write, then re-index, under the lock
+	writeFile(t, e.root, "a.txt", "A2\n")
+	s.Add(watch.Event{Rel: "a.txt", Op: watch.Write})
+	done := make(chan struct{})
+	go func() {
+		s.Flush(ctx)
+		close(done)
+	}()
+	select {
+	case <-done:
+		t.Fatal("flush ran while the root lock was held")
+	case <-time.After(50 * time.Millisecond):
+	}
+	data := []byte("A2\n")
+	if _, err := e.db.IndexData(ctx, "a.txt", data, index.Stat{Size: int64(len(data)), ModTime: time.Now()}); err != nil {
+		t.Fatal(err)
+	}
+	lock.Unlock()
+	<-done
+	if len(got) != 0 {
+		t.Fatalf("own write reported as external: %+v", got)
+	}
+}

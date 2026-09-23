@@ -1,6 +1,7 @@
 $ lino changes --since 0 --direct
 exit 0
 -- stdout --
-next 0
+1  added     wallet/validate.go  v=3ee51f
+2  moved     wallet/check.go     from wallet/validate.go  v=3ee51f
+next 2
 -- stderr --
-no changes

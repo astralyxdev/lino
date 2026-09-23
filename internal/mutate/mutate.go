@@ -97,8 +97,28 @@ type Pipeline struct {
 	MaxSize int64        // refuse files larger than this; <= 0 = no limit
 	Check   VersionCheck // nil = Exact
 	Hooks   []Hook
+	// Lock, when set, is held instead of the pipeline's own lock, so other
+	// writers of the root (the live process's watcher) can share it; see
+	// RootLock.
+	Lock *sync.Mutex
 
 	mu sync.Mutex
+}
+
+func (p *Pipeline) locker() *sync.Mutex {
+	if p.Lock != nil {
+		return p.Lock
+	}
+	return &p.mu
+}
+
+var rootLocks sync.Map // canonical root path -> *sync.Mutex
+
+// RootLock returns the process-wide lock serialising writes to root: every
+// mutation (file write, re-index, history) and every watcher batch.
+func RootLock(root string) *sync.Mutex {
+	l, _ := rootLocks.LoadOrStore(root, &sync.Mutex{})
+	return l.(*sync.Mutex)
 }
 
 // Run loads the file, checks --v, resolves the op's target, applies it,
@@ -107,8 +127,9 @@ func (p *Pipeline) Run(ctx context.Context, req Request) (*Result, error) {
 	if err := ValidateV(req.Path, req.V); err != nil {
 		return nil, err
 	}
-	p.mu.Lock()
-	defer p.mu.Unlock()
+	l := p.locker()
+	l.Lock()
+	defer l.Unlock()
 
 	f, err := fileio.LoadFile(p.Root, req.Cwd, req.Path, p.MaxSize)
 	if err != nil {
@@ -216,8 +237,9 @@ func withPath(err error, path string) error {
 // Exclusive runs fn holding the pipeline's lock, for mutations that do not go
 // through Run or Move (write, rm). fn may call RunHooks.
 func (p *Pipeline) Exclusive(fn func() error) error {
-	p.mu.Lock()
-	defer p.mu.Unlock()
+	l := p.locker()
+	l.Lock()
+	defer l.Unlock()
 	return fn()
 }
 

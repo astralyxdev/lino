@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/astralyx/lino/internal/index"
+	"github.com/astralyx/lino/internal/mutate"
 	"github.com/astralyx/lino/internal/watch"
 	"github.com/astralyx/lino/internal/watchsync"
 )
@@ -33,6 +34,7 @@ func (p *Process) startWatcher() {
 	pw := &watcher{w: w, cancel: cancel, done: make(chan struct{})}
 	pw.sync = watchsync.New(p.DB, p.Rules, watchsync.Options{
 		MaxSize: p.Config.MaxFileSize,
+		Lock:    mutate.RootLock(p.Root),
 		OnUpdate: func(ctx context.Context, ups []index.Update) {
 			if OnExternal != nil {
 				OnExternal(ctx, p, ups)

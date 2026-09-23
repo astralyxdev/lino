@@ -184,14 +184,18 @@ func TestMoveKeepsRowAndRefreshesStale(t *testing.T) {
 	}
 }
 
-func TestNoIndexIsNoop(t *testing.T) {
+// A root whose index is missing gets it built, so the change log and history
+// beside it can record the mutation.
+func TestNoIndexIsBuilt(t *testing.T) {
 	ctx := context.Background()
-	root := setup(t, map[string]string{"a.go": "x\n"}, false)
-	if _, err := filecmd.Edit(ctx, root, filecmd.EditRequest{Path: "a.go", Start: "1", End: "1", V: v(t, root, "a.go"), Lines: []string{"y"}}); err != nil {
+	root := setup(t, map[string]string{"a.go": "// alpha\n", "b.go": "// beta\n"}, false)
+	if _, err := filecmd.Edit(ctx, root, filecmd.EditRequest{Path: "a.go", Start: "1", End: "1", V: v(t, root, "a.go"), Lines: []string{"// gamma"}}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := os.Stat(index.Path(root)); !os.IsNotExist(err) {
-		t.Fatalf("hook created an index: %v", err)
+	for q, want := range map[string][]string{"gamma": {"a.go"}, "beta": {"b.go"}, "alpha": nil} {
+		if got := search(t, root, q); !slices.Equal(got, want) {
+			t.Errorf("search %q = %v, want %v", q, got, want)
+		}
 	}
 }
 

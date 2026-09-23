@@ -138,6 +138,10 @@ func open(path string) (*sql.DB, error) {
 	for _, p := range pragmas {
 		q.Add("_pragma", p)
 	}
+	// Transactions read before they write; a deferred one cannot upgrade
+	// after another connection committed and fails with SQLITE_BUSY without
+	// waiting. BEGIN IMMEDIATE takes the write lock up front, under busy_timeout.
+	q.Set("_txlock", "immediate")
 	db, err := sql.Open("sqlite", "file:"+path+"?"+q.Encode())
 	if err != nil {
 		return nil, err

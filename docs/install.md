@@ -1,7 +1,7 @@
 # Installing lino
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/astralyx/lino/main/scripts/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/astralyxdev/lino/main/scripts/install.sh | sh
 ```
 
 `scripts/install.sh` is POSIX sh. It detects the OS (`linux`, `darwin`; WSL counts as Linux)
@@ -13,7 +13,7 @@ only then installs. On a mismatch it prints both hashes, exits 1 and changes not
 |---|---|
 | `LINO_VERSION` | latest release (resolved from `github.com/<repo>/releases/latest`) |
 | `LINO_INSTALL_DIR` | `/usr/local/bin` as root, `~/.local/bin` otherwise |
-| `LINO_REPO` | `astralyx/lino` |
+| `LINO_REPO` | `astralyxdev/lino` |
 | `LINO_BASE_URL` | `https://github.com/$LINO_REPO/releases/download/$LINO_VERSION` |
 
 Needs `curl` or `wget`, and `sha256sum`, `shasum` or `openssl`.

@@ -37,8 +37,9 @@ func (p *Pipeline) Move(ctx context.Context, req MoveRequest) (*Result, error) {
 		return nil, err
 	}
 
-	p.mu.Lock()
-	defer p.mu.Unlock()
+	l := p.locker()
+	l.Lock()
+	defer l.Unlock()
 	c, err := p.moveLocked(ctx, req, fromRel, fromReal, toRel, toReal)
 	if c == nil {
 		return nil, err
@@ -153,7 +154,7 @@ func renameNoReplace(from, to string) error {
 
 func syncDir(dir string) {
 	if d, err := os.Open(dir); err == nil {
-		d.Sync()
+		fileio.Fsync(d)
 		d.Close()
 	}
 }

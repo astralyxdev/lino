@@ -53,7 +53,7 @@ func WriteAtomic(real string, data []byte, mode fs.FileMode) (err error) {
 	if _, err = tmp.Write(data); err != nil {
 		return writeErr(real, err)
 	}
-	if err = tmp.Sync(); err != nil {
+	if err = Fsync(tmp); err != nil {
 		return writeErr(real, err)
 	}
 	if err = tmp.Chmod(mode.Perm()); err != nil {
@@ -79,7 +79,7 @@ func syncDir(dir string) error {
 		return writeErr(dir, err)
 	}
 	defer d.Close()
-	if err := d.Sync(); err != nil {
+	if err := Fsync(d); err != nil {
 		return writeErr(dir, err)
 	}
 	return nil

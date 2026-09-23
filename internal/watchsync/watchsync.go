@@ -29,6 +29,9 @@ type Options struct {
 	OnUpdate func(ctx context.Context, ups []index.Update)
 	// OnError receives batch failures; the paths are retried with the next batch.
 	OnError func(err error)
+	// Lock, when set, is held while a batch is applied and reported, so it
+	// never interleaves with lino's own writes (write, re-index, history).
+	Lock sync.Locker
 }
 
 // Stats describe the syncer for `lino status`.
@@ -182,6 +185,10 @@ func (s *Syncer) Flush(ctx context.Context) {
 	}
 	s.mu.Unlock()
 
+	if s.opt.Lock != nil {
+		s.opt.Lock.Lock()
+		defer s.opt.Lock.Unlock()
+	}
 	var (
 		ups []index.Update
 		err error

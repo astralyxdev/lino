@@ -1,0 +1,153 @@
+{
+  "started": "2026-09-23T18:07:04.447609Z",
+  "finished": "2026-09-23T18:07:09.326687Z",
+  "machine": {
+    "os": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M4 Max",
+    "cpus": 16,
+    "go_version": "go1.26.1"
+  },
+  "lino": {
+    "version": "lino dev (none)",
+    "commit": "3f5f2b1"
+  },
+  "corpus": {
+    "source": "/Users/nikitapredein/dev/astralyx/agents-platform/lino/bench/.corpus/go-3901409b5d0fb7c85a3e6730a59943cc93b2835c.tar.gz#src",
+    "pin": "golang/go@3901409b5d0fb7c85a3e6730a59943cc93b2835c",
+    "files": 1878,
+    "lines": 1000911,
+    "bytes": 29505172,
+    "digest": "011e767e31ce9b300e5f3c53a9c3403516168306cea1d090cf92ebf532ebc858"
+  },
+  "metrics": [
+    {
+      "scenario": "setup",
+      "name": "init wall time",
+      "value": 3.308331458,
+      "unit": "s",
+      "target": {
+        "op": "\u003c",
+        "value": 30
+      },
+      "pass": true,
+      "note": "1878 files indexed"
+    },
+    {
+      "scenario": "edit-reindex",
+      "name": "edit end-to-end p95",
+      "value": 18.632833,
+      "unit": "ms",
+      "note": "archive/tar/reader_test.go, 1676 lines, n=50; p50 11.31 ms"
+    },
+    {
+      "scenario": "edit-reindex",
+      "name": "edit internal errors",
+      "value": 0,
+      "unit": "calls",
+      "target": {
+        "op": "\u003c",
+        "value": 1
+      },
+      "pass": true,
+      "note": "of 53 edit calls"
+    },
+    {
+      "scenario": "edit-reindex",
+      "name": "edit server-side p95 (write + re-index + history)",
+      "value": 15.725,
+      "unit": "ms",
+      "target": {
+        "op": "\u003c",
+        "value": 20
+      },
+      "pass": true,
+      "note": "lino stats, n=53"
+    },
+    {
+      "scenario": "edit-reindex",
+      "name": "re-index hook p95",
+      "value": 15.725,
+      "unit": "ms",
+      "note": "lino stats, n=53"
+    }
+  ],
+  "stats": {
+    "root": "/private/var/folders/y2/6n33y1gx56g0t_985fcy5tyc0000gn/T/lb-4031072516/root",
+    "id": "vtx3ob",
+    "live": true,
+    "process": {
+      "pid": 34213,
+      "peak_rss_bytes": 62128128,
+      "heap_bytes": 7298728
+    },
+    "index": {
+      "files": 1848,
+      "lines": 993517,
+      "binary": 0,
+      "db_bytes": 50401912
+    },
+    "history": {
+      "changes": 85,
+      "fragment_bytes": 77108,
+      "db_bytes": 2047648,
+      "bytes_per_1000_changes": 24089976
+    },
+    "since": "2026-09-23T22:07:08.631243+04:00",
+    "starts": 1,
+    "external": 0,
+    "calls": 55,
+    "rates": [
+      {
+        "outcome": "conflict",
+        "count": 0,
+        "of": 53,
+        "rate": 0
+      },
+      {
+        "outcome": "anchor_mismatch",
+        "count": 0,
+        "of": 53,
+        "rate": 0
+      }
+    ],
+    "reindex": {
+      "count": 53,
+      "p50_us": 4388,
+      "p95_us": 15725,
+      "max_us": 18378
+    },
+    "commands": [
+      {
+        "name": "edit",
+        "count": 53,
+        "p50_us": 5266,
+        "p95_us": 15725,
+        "max_us": 19743,
+        "outcomes": {
+          "updated": 53
+        }
+      },
+      {
+        "name": "read",
+        "count": 1,
+        "p50_us": 130,
+        "p95_us": 130,
+        "max_us": 130,
+        "outcomes": {
+          "ok": 1
+        }
+      },
+      {
+        "name": "stats",
+        "count": 1,
+        "p50_us": 960,
+        "p95_us": 960,
+        "max_us": 960,
+        "outcomes": {
+          "ok": 1
+        }
+      }
+    ]
+  }
+}
