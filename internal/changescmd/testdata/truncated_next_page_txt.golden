@@ -1,0 +1,9 @@
+$ lino changes --since 3
+-- stdout --
+4  modified  other/f.txt     v=aaaaaa→bbbbbb  lines 4
+5  moved     wallet/new.go   from old/w.go
+6  removed   wallet/gone.go  v=123abc
+next 6
+-- stderr --
+truncated at 3 events
+hint: --since 6

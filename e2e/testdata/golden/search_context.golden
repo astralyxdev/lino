@@ -1,0 +1,9 @@
+$ lino search ErrInvalidAmount -C 1 --path wallet/service.go --direct
+exit 0
+-- stdout --
+wallet/service.go
+  13- if amt <= 0 {
+  14  return ErrInvalidAmount
+  15- }
+1 hit in 1 file (index)
+-- stderr --

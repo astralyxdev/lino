@@ -1,0 +1,8 @@
+$ lino history -k 2 --direct
+exit 0
+-- stdout --
+6  <time>  lino  -        rm      old/gone.txt   removed
+5  <time>  lino  agent-1  delete  docs/notes.md  lines 1(del)
+-- stderr --
+showing the newest 2; older changes exist
+hint: -k 4

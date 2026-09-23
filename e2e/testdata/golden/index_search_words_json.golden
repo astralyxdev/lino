@@ -1,0 +1,5 @@
+$ lino search withdraw --words --json --direct
+exit 0
+-- stdout --
+{"version":1,"ok":true,"outcome":"ok","data":{"query":"withdraw","hits":[{"path":"docs/deep/more.md","line":1,"text":"withdraw withdraw withdraw"},{"path":"docs/notes.md","line":3,"text":"wallet withdraw limits and the wallet service"},{"path":"wallet/service.go","line":12,"text":"func Withdraw(ctx context.Context, id, amt int64) error {"}],"files":3,"source":"words"}}
+-- stderr --

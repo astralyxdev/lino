@@ -1,0 +1,4 @@
+$ lino changes --since 0 --path gone.go --json
+-- stdout --
+{"version":1,"ok":true,"outcome":"ok","data":{"events":[{"seq":6,"time":"T","source":"lino","op":"rm","path":"wallet/gone.go","kind":"removed","v_before":"123abc"}],"next":7}}
+-- stderr --

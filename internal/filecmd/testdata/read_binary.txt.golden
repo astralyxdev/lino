@@ -1,0 +1,3 @@
+stdout:
+stderr:
+refused: bin.dat: binary file, not readable as text

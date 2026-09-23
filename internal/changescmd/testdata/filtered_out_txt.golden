@@ -1,0 +1,5 @@
+$ lino changes --since 1000 --path docs/**
+-- stdout --
+next 1044
+-- stderr --
+no changes

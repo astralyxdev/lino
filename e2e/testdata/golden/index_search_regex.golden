@@ -1,0 +1,9 @@
+$ lino search 'Err\w+ =|colou?r' --regex --direct
+exit 0
+-- stdout --
+docs/notes.md
+  2   The colour of money.
+wallet/errors.go
+  6   ErrInvalidAmount = errors.New("invalid amount")
+2 hits in 2 files (index)
+-- stderr --

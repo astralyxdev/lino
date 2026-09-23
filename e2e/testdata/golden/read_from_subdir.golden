@@ -1,0 +1,6 @@
+$ lino read errors.go --lines 6 --direct
+exit 0
+-- stdout --
+wallet/errors.go v=53e135 lines 6-6 of 7
+	ErrInvalidAmount = errors.New("invalid amount")
+-- stderr --

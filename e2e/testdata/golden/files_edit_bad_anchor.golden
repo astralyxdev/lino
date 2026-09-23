@@ -1,0 +1,5 @@
+$ lino edit wallet/service.go x:1 13 --v 000000 --direct
+exit 2
+-- stdout --
+-- stderr --
+usage: invalid anchor "x:1": want <line> or <line>:<hash>

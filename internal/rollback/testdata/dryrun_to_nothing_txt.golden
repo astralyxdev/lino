@@ -1,0 +1,4 @@
+$ lino rollback --to 1 --dry-run
+-- stdout --
+nothing to restore: files are as they were right after 1
+-- stderr --

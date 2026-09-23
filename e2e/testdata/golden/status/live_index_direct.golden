@@ -1,0 +1,6 @@
+$ lino index --direct
+exit 9
+-- stdout --
+-- stderr --
+live_exists: live process $ID (pid <n>) serves $ROOT
+hint: run lino index without --direct, or lino stop first

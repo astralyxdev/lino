@@ -1,0 +1,7 @@
+$ lino search ErrInvalidAmount --path errors.go --direct
+exit 0
+-- stdout --
+wallet/errors.go
+  6   ErrInvalidAmount = errors.New("invalid amount")
+1 hit in 1 file (index)
+-- stderr --

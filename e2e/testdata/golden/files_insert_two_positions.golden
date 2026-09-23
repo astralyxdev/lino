@@ -1,0 +1,6 @@
+$ lino insert crlf.txt --at-start --at-end --v e44b70 --direct
+exit 2
+-- stdout --
+-- stderr --
+usage: insert: give exactly one of --before, --after, --at-start, --at-end
+hint: lino insert <file> (--before A | --after A | --at-start | --at-end) --v V

@@ -1,0 +1,3 @@
+stdout:
+{"version":1,"ok":false,"outcome":"refused","message":"sub: is a directory","hint":"lino ls sub"}
+stderr:

@@ -1,0 +1,5 @@
+$ lino search a(b --regex --direct
+exit 2
+-- stdout --
+-- stderr --
+usage: invalid regex: error parsing regexp: missing closing ): `a(b`

@@ -1,0 +1,5 @@
+$ lino search LongLine --json --direct
+exit 0
+-- stdout --
+{"version":1,"ok":true,"outcome":"ok","data":{"query":"LongLine","hits":[{"path":"long.txt","line":1,"text":"LongLine xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx…"}],"files":1,"source":"index"}}
+-- stderr --

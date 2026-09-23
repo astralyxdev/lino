@@ -1,0 +1,142 @@
+# read (exit 0)
+.data.end: number
+.data.lines[]: string
+.data.path: string
+.data.start: number
+.data.total: number
+.data.version: string
+.ok: bool
+.outcome: string
+.version: number
+# read_anchors_truncated (exit 0)
+.data.anchors[]: string
+.data.end: number
+.data.lines[]: string
+.data.path: string
+.data.start: number
+.data.total: number
+.data.version: string
+.hint: string
+.message: string
+.ok: bool
+.outcome: string
+.version: number
+# edit (exit 0)
+.data.end: number
+.data.old_version: string
+.data.op: string
+.data.path: string
+.data.start: number
+.data.total: number
+.data.version: string
+.ok: bool
+.outcome: string
+.version: number
+# insert (exit 0)
+.data.end: number
+.data.old_version: string
+.data.op: string
+.data.path: string
+.data.start: number
+.data.total: number
+.data.version: string
+.ok: bool
+.outcome: string
+.version: number
+# delete (exit 0)
+.data.end: number
+.data.old_version: string
+.data.op: string
+.data.path: string
+.data.start: number
+.data.total: number
+.data.version: string
+.ok: bool
+.outcome: string
+.version: number
+# replace (exit 0)
+.data.end: number
+.data.old_version: string
+.data.op: string
+.data.path: string
+.data.start: number
+.data.total: number
+.data.version: string
+.ok: bool
+.outcome: string
+.version: number
+# write_create (exit 0)
+.data.created: bool
+.data.old_version: string
+.data.op: string
+.data.path: string
+.data.total: number
+.data.version: string
+.ok: bool
+.outcome: string
+.version: number
+# write_update (exit 0)
+.data.old_version: string
+.data.op: string
+.data.path: string
+.data.total: number
+.data.version: string
+.ok: bool
+.outcome: string
+.version: number
+# mv (exit 0)
+.data.from: string
+.data.path: string
+.data.version: string
+.ok: bool
+.outcome: string
+.version: number
+# rm (exit 0)
+.data.old_version: string
+.data.op: string
+.data.path: string
+.ok: bool
+.outcome: string
+.version: number
+# err_usage (exit 2)
+.hint: string
+.message: string
+.ok: bool
+.outcome: string
+.version: number
+# err_not_found (exit 3)
+.message: string
+.ok: bool
+.outcome: string
+.version: number
+# err_anchor_mismatch (exit 4)
+.data.lines[].anchor: string
+.data.lines[].n: number
+.data.lines[].text: string
+.data.path: string
+.message: string
+.ok: bool
+.outcome: string
+.version: number
+# err_ambiguous (exit 5)
+.data.candidates[]: string
+.hint: string
+.message: string
+.ok: bool
+.outcome: string
+.version: number
+# err_conflict (exit 6)
+.data.lines[].anchor: string
+.data.lines[].n: number
+.data.lines[].text: string
+.data.path: string
+.hint: string
+.message: string
+.ok: bool
+.outcome: string
+.version: number
+# err_refused (exit 7)
+.message: string
+.ok: bool
+.outcome: string
+.version: number

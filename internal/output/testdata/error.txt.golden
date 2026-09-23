@@ -1,0 +1,6 @@
+--- stdout
+wallet/service.go
+13:4de|     if amt < 0 {
+--- stderr
+conflict: wallet/service.go changed since v=8c21e0
+hint: re-read with --lines 13:13 --anchors

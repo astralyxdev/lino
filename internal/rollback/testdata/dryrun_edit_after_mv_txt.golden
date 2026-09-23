@@ -1,0 +1,8 @@
+$ lino rollback 1 --dry-run
+-- stdout --
+would undo 1 (edit f.txt lines 2)
+g.txt  v=5fa60e→7f79f1
+- 2: X
++ 2: l2
+no conflicts
+-- stderr --

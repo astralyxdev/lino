@@ -1,0 +1,5 @@
+$ lino read wallet/service.go --lines 12:13 --anchors --json --direct
+exit 0
+-- stdout --
+{"version":1,"ok":true,"outcome":"ok","data":{"path":"wallet/service.go","version":"5630d6","start":12,"end":13,"total":240,"lines":["func Withdraw(ctx context.Context, id, amt int64) error {","    if amt <= 0 {"],"anchors":["rSn","0nd"]}}
+-- stderr --

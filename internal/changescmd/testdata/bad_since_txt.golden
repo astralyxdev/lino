@@ -1,0 +1,5 @@
+$ lino changes --since x
+-- stdout --
+-- stderr --
+usage: changes: invalid value "x" for flag -since: parse error
+hint: lino changes [--since N] [--path P ...] [--wait DURATION]

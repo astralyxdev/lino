@@ -1,0 +1,5 @@
+$ lino changes
+-- stdout --
+-- stderr --
+usage: --since is required without a live process
+hint: lino changes --since N

@@ -1,0 +1,6 @@
+$ lino write dup.txt --direct
+exit 6
+-- stdout --
+-- stderr --
+conflict: dup.txt: --v is required
+hint: pass --v from lino read dup.txt, or --force to overwrite

@@ -1,0 +1,15 @@
+stdout:
+./  7 files  248 lines  4.4K
+  .gitignore  1 line  7B
+  README.md  3 lines  14B
+  empty/  1 file  0 lines  0B
+    .gitkeep  0 lines  0B
+  wallet/  4 files  244 lines  4.4K
+    errors.go  1 line  15B
+    img/  1 file  0 lines  3.9K
+      logo.png  binary  3.9K
+    internal/  1 file  3 lines  27B
+      db/  1 file  3 lines  27B
+        db.go  3 lines  27B
+    service.go  240 lines  480B
+stderr:

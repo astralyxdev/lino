@@ -1,0 +1,3 @@
+--- stdout
+{"version":1,"ok":false,"outcome":"conflict","data":{"path":"wallet/service.go","lines":[{"n":13,"anchor":"4de","text":"    if amt < 0 {"}]},"message":"wallet/service.go changed since v=8c21e0","hint":"re-read with --lines 13:13 --anchors"}
+--- stderr

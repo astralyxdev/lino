@@ -1,0 +1,4 @@
+$ lino rollback 1 --dry-run --json
+-- stdout --
+{"version":1,"ok":true,"outcome":"ok","data":{"dry_run":true,"undo":{"id":1,"op":"edit","path":"f.txt","summary":"lines 2"},"files":[{"path":"g.txt","action":"edit","old_version":"5fa60e","version":"7f79f1","hunks":[{"old_start":2,"old":["X"],"new_start":2,"new":["l2"]}]}],"diff_lines":2,"shown_lines":2}}
+-- stderr --

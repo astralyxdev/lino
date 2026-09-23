@@ -1,0 +1,5 @@
+$ lino ls nope --direct
+exit 3
+-- stdout --
+-- stderr --
+not_found: nope is not an indexed file or directory

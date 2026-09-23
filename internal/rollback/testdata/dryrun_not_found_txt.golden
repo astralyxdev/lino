@@ -1,0 +1,5 @@
+$ lino rollback 99 --dry-run
+-- stdout --
+-- stderr --
+not_found: no change 99 in history (unknown or pruned)
+hint: lino history

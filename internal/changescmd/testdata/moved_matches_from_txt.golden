@@ -1,0 +1,5 @@
+$ lino changes --since 0 --path old/*
+-- stdout --
+5  moved     wallet/new.go  from old/w.go
+next 7
+-- stderr --

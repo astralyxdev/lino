@@ -1,0 +1,4 @@
+$ lino changes --since 0 --path old/* --json
+-- stdout --
+{"version":1,"ok":true,"outcome":"ok","data":{"events":[{"seq":5,"time":"T","source":"lino","op":"mv","path":"wallet/new.go","from":"old/w.go","kind":"moved"}],"next":7}}
+-- stderr --

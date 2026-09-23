@@ -1,0 +1,5 @@
+$ lino search needle -k 201 --direct
+exit 2
+-- stdout --
+-- stderr --
+usage: -k must be between 1 and 200

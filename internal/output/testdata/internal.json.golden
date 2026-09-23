@@ -1,0 +1,3 @@
+--- stdout
+{"version":1,"ok":false,"outcome":"internal","message":"disk on fire"}
+--- stderr

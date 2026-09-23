@@ -1,0 +1,5 @@
+$ lino index --direct
+exit 0
+-- stdout --
+reconciled in <n>ms: 3 files, 1 added, 0 modified, 1 removed, 0 moved, 2 unchanged
+-- stderr --

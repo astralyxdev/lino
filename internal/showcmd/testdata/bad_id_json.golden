@@ -1,0 +1,4 @@
+$ lino show x --json
+-- stdout --
+{"version":1,"ok":false,"outcome":"usage","message":"invalid change id \"x\"","hint":"lino history"}
+-- stderr --

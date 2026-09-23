@@ -1,0 +1,12 @@
+$ lino read wallet/errors.go --direct
+exit 0
+-- stdout --
+wallet/errors.go v=53e135 lines 1-7 of 7
+package wallet
+
+import "errors"
+
+var (
+	ErrInvalidAmount = errors.New("invalid amount")
+)
+-- stderr --

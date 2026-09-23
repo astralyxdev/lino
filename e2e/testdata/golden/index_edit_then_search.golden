@@ -1,0 +1,9 @@
+$ lino search ErrAmountTooSmall --direct
+exit 0
+-- stdout --
+wallet/limits.go
+  3   const MaxWithdraw = 100 // ErrAmountTooSmall below
+wallet/service.go
+  14  return ErrAmountTooSmall
+2 hits in 2 files (index)
+-- stderr --

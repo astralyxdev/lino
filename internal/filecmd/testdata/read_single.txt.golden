@@ -1,0 +1,4 @@
+stdout:
+a.go v=04425d lines 1-1 of 3
+package a
+stderr:

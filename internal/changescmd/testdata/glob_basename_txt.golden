@@ -1,0 +1,7 @@
+$ lino changes --since 0 --path *.go --path *.md
+-- stdout --
+5  moved     wallet/new.go      from old/w.go
+6  removed   wallet/gone.go     v=123abc
+7  modified  wallet/service.go  v=111111→222222  lines 7(del),20
+next 7
+-- stderr --

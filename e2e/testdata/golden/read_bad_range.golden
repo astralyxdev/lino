@@ -1,0 +1,6 @@
+$ lino read big.txt --lines 5:2 --direct
+exit 2
+-- stdout --
+-- stderr --
+usage: --lines "5:2": end must be >= start
+hint: --lines A:B with 1 <= A <= B

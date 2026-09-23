@@ -1,0 +1,12 @@
+$ lino edit wallet/service.go 13 13 --v 000000 --direct
+exit 6
+-- stdout --
+wallet/service.go
+11:Tq4| // 11
+12:rSn| func Withdraw(ctx context.Context, id, amt int64) error {
+13:0nd|     if amt <= 0 {
+14:KA7|         return ErrInvalidAmount
+15:JJL|     }
+-- stderr --
+conflict: wallet/service.go changed since v=000000 (now v=5630d6)
+hint: re-read the lines below and retry with --v 5630d6

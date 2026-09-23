@@ -1,0 +1,6 @@
+$ lino replace dup.txt --v 59b2bc --direct
+exit 2
+-- stdout --
+-- stderr --
+usage: no separator line "<<<lino>>>" on stdin
+hint: old lines, then a line <<<lino>>>, then new lines

@@ -1,0 +1,3 @@
+stdout:
+{"version":1,"ok":false,"outcome":"usage","message":"--depth must be >= 0"}
+stderr:

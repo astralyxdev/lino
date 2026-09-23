@@ -1,0 +1,5 @@
+$ lino search ErrInvalidAmount -C 1 -k 2 --json --direct
+exit 0
+-- stdout --
+{"version":1,"ok":true,"outcome":"truncated","data":{"query":"ErrInvalidAmount","hits":[{"path":"docs/notes.md","line":2,"text":"see ErrInvalidAmount","before":[{"line":1,"text":"# Notes"}]},{"path":"wallet/errors.go","line":6,"text":"\tErrInvalidAmount = errors.New(\"invalid amount\")","before":[{"line":5,"text":"var ("}],"after":[{"line":7,"text":")"}]}],"files":2,"source":"index","more":true},"message":"truncated at 2 hits","hint":"-k 4, or narrow with --path"}
+-- stderr --

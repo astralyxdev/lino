@@ -1,0 +1,5 @@
+$ lino history -k 0 --direct
+exit 2
+-- stdout --
+-- stderr --
+usage: -k 0: want 1..500

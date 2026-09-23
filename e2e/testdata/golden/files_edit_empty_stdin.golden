@@ -1,0 +1,6 @@
+$ lino edit crlf.txt 1 1 --v e44b70 --direct
+exit 2
+-- stdout --
+-- stderr --
+usage: no content on stdin
+hint: pass new lines with a heredoc; use lino delete to remove lines

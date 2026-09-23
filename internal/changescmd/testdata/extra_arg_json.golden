@@ -1,0 +1,4 @@
+$ lino changes x --since 1 --json
+-- stdout --
+{"version":1,"ok":false,"outcome":"usage","message":"changes: too many arguments","hint":"lino changes [--since N] [--path P ...] [--wait DURATION]"}
+-- stderr --

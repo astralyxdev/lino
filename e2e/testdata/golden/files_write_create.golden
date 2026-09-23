@@ -1,0 +1,5 @@
+$ lino write new/dir/f.txt --direct
+exit 0
+-- stdout --
+created new/dir/f.txt v=4a1e67 lines 2
+-- stderr --

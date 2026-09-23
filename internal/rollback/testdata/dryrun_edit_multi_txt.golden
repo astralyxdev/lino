@@ -1,0 +1,8 @@
+$ lino rollback 1 --dry-run
+-- stdout --
+would undo 1 (write f.txt lines 2,7)
+- 3: B
++ 3: l2
+- 8: l7
+no conflicts
+-- stderr --

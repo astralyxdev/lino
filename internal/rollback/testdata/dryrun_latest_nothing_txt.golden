@@ -1,0 +1,5 @@
+$ lino rollback --by nobody --dry-run
+-- stdout --
+-- stderr --
+nothing to undo: no change by nobody in history is still in effect
+hint: lino history --by nobody

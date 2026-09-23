@@ -1,0 +1,4 @@
+$ lino changes --json
+-- stdout --
+{"version":1,"ok":false,"outcome":"usage","message":"--since is required without a live process","hint":"lino changes --since N"}
+-- stderr --

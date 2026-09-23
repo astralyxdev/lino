@@ -1,0 +1,5 @@
+$ lino read nope.go --direct
+exit 3
+-- stdout --
+-- stderr --
+not_found: nope.go: no such file

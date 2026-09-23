@@ -1,0 +1,6 @@
+$ lino rm dup.txt --direct
+exit 6
+-- stdout --
+-- stderr --
+conflict: dup.txt: rm needs --v or --force
+hint: read the file first: lino read dup.txt, then lino rm dup.txt --v V

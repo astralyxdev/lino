@@ -1,0 +1,4 @@
+$ lino changes --since 1044 --json
+-- stdout --
+{"version":1,"ok":true,"outcome":"empty","data":{"events":[],"next":1044},"message":"no changes"}
+-- stderr --

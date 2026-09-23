@@ -1,0 +1,3 @@
+stdout:
+stderr:
+not_found: nope.go: no such file

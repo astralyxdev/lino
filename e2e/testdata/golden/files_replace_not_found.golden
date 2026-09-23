@@ -1,0 +1,6 @@
+$ lino replace dup.txt --v 59b2bc --direct
+exit 3
+-- stdout --
+-- stderr --
+not_found: old text (1 lines) not found
+hint: the match is exact and whole-line; re-read the file

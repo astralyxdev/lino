@@ -1,0 +1,6 @@
+$ lino edit wallet/service.go 13 13 --direct
+exit 6
+-- stdout --
+-- stderr --
+conflict: wallet/service.go: --v is required
+hint: read the file first: lino read wallet/service.go --anchors

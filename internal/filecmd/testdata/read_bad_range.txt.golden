@@ -1,0 +1,4 @@
+stdout:
+stderr:
+usage: --lines "3:2": end must be >= start
+hint: --lines A:B with 1 <= A <= B

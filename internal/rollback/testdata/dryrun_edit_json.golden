@@ -1,0 +1,4 @@
+$ lino rollback 1 --dry-run --json
+-- stdout --
+{"version":1,"ok":true,"outcome":"ok","data":{"dry_run":true,"undo":{"id":1,"op":"edit","path":"wallet/service.go","author":"agent-2","summary":"lines 13"},"files":[{"path":"wallet/service.go","action":"edit","old_version":"7b771d","version":"b97cf5","hunks":[{"old_start":13,"old":["    if amt <= 0 || amt > MaxWithdraw {"],"new_start":13,"new":["    if amt <= 0 {"]}]}],"diff_lines":2,"shown_lines":2}}
+-- stderr --

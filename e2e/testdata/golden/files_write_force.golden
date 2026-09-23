@@ -1,0 +1,5 @@
+$ lino write dup.txt --force --direct
+exit 0
+-- stdout --
+updated dup.txt v=59b2bc→7e3b82 lines 1
+-- stderr --

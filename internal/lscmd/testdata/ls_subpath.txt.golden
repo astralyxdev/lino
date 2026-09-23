@@ -1,0 +1,10 @@
+stdout:
+wallet/  4 files  244 lines  4.4K
+  errors.go  1 line  15B
+  img/  1 file  0 lines  3.9K
+    logo.png  binary  3.9K
+  internal/  1 file  3 lines  27B
+    db/  1 file  3 lines  27B
+      db.go  3 lines  27B
+  service.go  240 lines  480B
+stderr:

@@ -1,0 +1,28 @@
+$ lino search needle --direct
+exit 0
+-- stdout --
+hits/a.txt
+  1   needle 0
+  2   needle 5
+  3   needle 10
+  4   needle 15
+  5   needle 20
+  6   needle 25
+  7   needle 30
+  8   needle 35
+  9   needle 40
+  10  needle 45
+  11  needle 50
+  12  needle 55
+  13  needle 60
+  14  needle 65
+  15  needle 70
+  16  needle 75
+  17  needle 80
+  18  needle 85
+  19  needle 90
+  20  needle 95
+20 hits in 1 file (index)
+-- stderr --
+truncated at 20 hits
+hint: -k 40, or narrow with --path

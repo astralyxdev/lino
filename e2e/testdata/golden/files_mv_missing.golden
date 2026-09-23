@@ -1,0 +1,5 @@
+$ lino mv nope.txt x.txt --direct
+exit 3
+-- stdout --
+-- stderr --
+not_found: nope.txt: no such file

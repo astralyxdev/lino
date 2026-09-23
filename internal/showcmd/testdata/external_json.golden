@@ -1,0 +1,4 @@
+$ lino show 4 --json
+-- stdout --
+{"version":1,"ok":true,"outcome":"ok","data":{"id":4,"time":"2026-09-23T12:41:10Z","source":"external","op":"external","path":"wallet/service.go","v_before":"5f02aa","v_after":"77c1d3","hunks":[{"old_start":2,"old":["b"],"new_start":2,"new":["B","B2"]}],"diff_lines":3,"shown_lines":3}}
+-- stderr --

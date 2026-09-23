@@ -1,0 +1,3 @@
+--- stdout
+{"version":1,"ok":true,"outcome":"truncated","data":{"path":"wallet/service.go","v":"8c21e0","lines":[{"n":12,"anchor":"a3f","text":"func Withdraw() error {"},{"n":13,"anchor":"9c1","text":"    if amt <= 0 {"}]},"hint":"--lines 14:500"}
+--- stderr

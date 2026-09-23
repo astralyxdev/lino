@@ -1,0 +1,6 @@
+$ lino history service.go --direct
+exit 0
+-- stdout --
+4  <time>  external  -        external  wallet/service.go  lines 5
+1  <time>  lino      agent-2  edit      wallet/service.go  lines 2-3
+-- stderr --

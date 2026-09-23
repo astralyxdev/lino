@@ -1,0 +1,6 @@
+stdout:
+a.go v=04425d lines 1-3 of 3
+package a
+
+func A() {}
+stderr:

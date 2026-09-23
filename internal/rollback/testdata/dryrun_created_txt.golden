@@ -1,0 +1,8 @@
+$ lino rollback 1 --dry-run
+-- stdout --
+would undo 1 (write n.txt created)
+remove n.txt v=0ea89b
+- 1: n1
+- 2: n2
+no conflicts
+-- stderr --

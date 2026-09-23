@@ -1,0 +1,5 @@
+$ lino changes x --since 1
+-- stdout --
+-- stderr --
+usage: changes: too many arguments
+hint: lino changes [--since N] [--path P ...] [--wait DURATION]

@@ -1,0 +1,5 @@
+stdout:
+crlf.txt v=6f4792 lines 1-2 of 2
+1:0a6| one
+2:RHS| two
+stderr:

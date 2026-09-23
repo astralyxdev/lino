@@ -1,0 +1,9 @@
+$ lino delete crlf.txt 2 9 --v e44b70 --direct
+exit 4
+-- stdout --
+crlf.txt
+1:0a6| one
+2:RHS| two
+3:NLJ| three
+-- stderr --
+anchor_mismatch: line 9 is beyond the end of the file (3 lines)

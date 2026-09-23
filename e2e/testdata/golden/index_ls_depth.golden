@@ -1,0 +1,7 @@
+$ lino ls docs --depth 1 --direct
+exit 0
+-- stdout --
+docs/  2 files  4 lines  102B
+  deep/  1 file  1 line  27B
+  notes.md  3 lines  75B
+-- stderr --

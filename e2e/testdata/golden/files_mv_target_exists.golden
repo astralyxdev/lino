@@ -1,0 +1,6 @@
+$ lino mv dup.txt crlf.txt --direct
+exit 6
+-- stdout --
+-- stderr --
+conflict: crlf.txt: already exists
+hint: remove it first with lino rm crlf.txt, or pick another name

@@ -1,0 +1,4 @@
+$ lino rollback --by agent-1 --dry-run --json
+-- stdout --
+{"version":1,"ok":true,"outcome":"ok","data":{"dry_run":true,"undo":{"id":1,"op":"edit","path":"f.txt","author":"agent-1","summary":"lines 1"},"files":[{"path":"f.txt","action":"edit","old_version":"e406be","version":"528333","hunks":[{"old_start":1,"old":["X"],"new_start":1,"new":["l1"]}]}],"diff_lines":2,"shown_lines":2}}
+-- stderr --

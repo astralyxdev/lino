@@ -1,0 +1,5 @@
+$ lino mv dup.txt ../out.txt --direct
+exit 7
+-- stdout --
+-- stderr --
+refused: ../out.txt: outside the root

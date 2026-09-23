@@ -1,0 +1,5 @@
+$ lino edit crlf.txt 2 2 --v e44b70 --direct
+exit 0
+-- stdout --
+updated crlf.txt v=e44b70→edf79c lines 2-3
+-- stderr --

@@ -1,0 +1,6 @@
+$ lino rm bin.dat --v 000000 --direct
+exit 7
+-- stdout --
+-- stderr --
+refused: bin.dat: binary file; rm needs --force
+hint: lino rm bin.dat --force

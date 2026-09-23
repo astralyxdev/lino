@@ -1,0 +1,10 @@
+$ lino stats --direct
+exit 0
+-- stdout --
+root  $ROOT
+id  $ID
+process  not running
+index  1 files, 3 lines, 0 binary, index.db <size>
+history  0 changes, history.db <size>
+metrics  none collected yet
+-- stderr --

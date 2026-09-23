@@ -1,0 +1,4 @@
+stdout:
+a.go v=04425d lines 0-0 of 3
+stderr:
+line 10 is past the end (3 lines)

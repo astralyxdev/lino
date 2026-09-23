@@ -1,0 +1,11 @@
+$ lino edit wallet/service.go 13:zzz 13 --v 5630d6 --direct
+exit 4
+-- stdout --
+wallet/service.go
+11:Tq4| // 11
+12:rSn| func Withdraw(ctx context.Context, id, amt int64) error {
+13:0nd|     if amt <= 0 {
+14:KA7|         return ErrInvalidAmount
+15:JJL|     }
+-- stderr --
+anchor_mismatch: range 13:zzz 13 no longer matches; re-read with --anchors

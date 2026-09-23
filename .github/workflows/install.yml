@@ -1,0 +1,73 @@
+name: install
+
+# Runs scripts/install.sh against a test release built from this commit, on
+# every supported platform. Tampered binaries and bad checksums must be refused.
+on:
+  push:
+    paths: ["scripts/**", "cmd/**", ".github/workflows/install.yml"]
+  pull_request:
+    paths: ["scripts/**", "cmd/**", ".github/workflows/install.yml"]
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      artifact:
+        description: "Name of an uploaded release artifact to test instead of building one"
+        type: string
+        required: false
+
+jobs:
+  release:
+    if: ${{ !inputs.artifact }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: OUT=dist VERSION=v0.0.0-installtest COMMIT=ci ./scripts/dist.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: install-test-release
+          path: dist/*
+          if-no-files-found: error
+
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: shellcheck -s sh scripts/install.sh scripts/test-install.sh scripts/dist.sh
+
+  test:
+    needs: release
+    if: ${{ always() && (needs.release.result == 'success' || needs.release.result == 'skipped') }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-amd64
+            os: ubuntu-latest
+          - name: linux-arm64 (qemu)
+            os: ubuntu-latest
+            docker: linux/arm64
+          - name: darwin-arm64
+            os: macos-latest
+    name: test (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.artifact || 'install-test-release' }}
+          path: release
+      - name: installer tests
+        if: ${{ !matrix.docker }}
+        run: DIST=release sh scripts/test-install.sh
+      - uses: docker/setup-qemu-action@v3
+        if: ${{ matrix.docker }}
+      - name: installer tests (${{ matrix.docker }})
+        if: ${{ matrix.docker }}
+        run: |
+          docker run --rm --platform ${{ matrix.docker }} \
+            -v "$PWD/scripts:/src/scripts:ro" -v "$PWD/release:/rel:ro" -e DIST=/rel \
+            buildpack-deps:bookworm-curl \
+            sh -c 'useradd -m u && su u -c "cd /src && sh scripts/test-install.sh"'

@@ -1,0 +1,5 @@
+$ lino history old --direct
+exit 0
+-- stdout --
+6  <time>  lino  -  rm  old/gone.txt  removed
+-- stderr --

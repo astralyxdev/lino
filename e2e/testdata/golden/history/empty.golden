@@ -1,0 +1,5 @@
+$ lino history --since 6 --direct
+exit 0
+-- stdout --
+-- stderr --
+no changes

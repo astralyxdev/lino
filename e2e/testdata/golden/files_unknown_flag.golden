@@ -1,0 +1,6 @@
+$ lino read dup.txt --bogus --direct
+exit 2
+-- stdout --
+-- stderr --
+usage: read: flag provided but not defined: -bogus
+hint: lino read <file> [--lines A:B] [--anchors]

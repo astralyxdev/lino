@@ -1,0 +1,15 @@
+$ lino ls --direct
+exit 0
+-- stdout --
+./  7 files  254 lines  1.9K
+  .gitignore  2 lines  13B
+  .linoignore  1 line  8B
+  bin.dat  binary  23B
+  docs/  2 files  4 lines  102B
+    deep/  1 file  1 line  27B
+      more.md  1 line  27B
+    notes.md  3 lines  75B
+  wallet/  2 files  247 lines  1.7K
+    errors.go  7 lines  90B
+    service.go  240 lines  1.6K
+-- stderr --

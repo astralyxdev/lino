@@ -1,0 +1,5 @@
+$ lino show
+-- stdout --
+-- stderr --
+usage: show: missing arguments
+hint: lino show <id>

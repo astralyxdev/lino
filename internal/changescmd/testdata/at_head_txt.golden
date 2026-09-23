@@ -1,0 +1,5 @@
+$ lino changes --since 1044
+-- stdout --
+next 1044
+-- stderr --
+no changes

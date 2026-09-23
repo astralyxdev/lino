@@ -1,0 +1,6 @@
+$ lino search ErrInvalidAmount --path 'nope/**' --direct
+exit 0
+-- stdout --
+0 hits in 0 files (index)
+-- stderr --
+no hits

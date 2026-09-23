@@ -1,0 +1,5 @@
+$ lino rm nope.txt --force --direct
+exit 3
+-- stdout --
+-- stderr --
+not_found: nope.txt: no such file

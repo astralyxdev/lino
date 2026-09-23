@@ -1,0 +1,4 @@
+$ lino rollback --by nobody --dry-run --json
+-- stdout --
+{"version":1,"ok":true,"outcome":"empty","message":"nothing to undo: no change by nobody in history is still in effect","hint":"lino history --by nobody"}
+-- stderr --

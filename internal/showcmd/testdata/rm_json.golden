@@ -1,0 +1,4 @@
+$ lino show 2 --json
+-- stdout --
+{"version":1,"ok":true,"outcome":"ok","data":{"id":2,"time":"2026-09-23T12:41:08Z","source":"lino","op":"rm","path":"wallet/gone.go","v_before":"123abc","removed":true,"hunks":[{"old_start":1,"old":["package wallet","","func Gone() {}"],"new_start":1,"new":[]}],"diff_lines":3,"shown_lines":3}}
+-- stderr --

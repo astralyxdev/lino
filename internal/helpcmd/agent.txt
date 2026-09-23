@@ -1,0 +1,59 @@
+# lino agent instructions v1
+
+Use lino for every file operation in this project, not cat, grep, find or sed.
+  cat, head, tail  ->  lino read <file> [--lines A:B]
+  grep, rg         ->  lino search <text> [--regex | --words] [--path GLOB] [-C N] [-k N]
+  find, ls, tree   ->  lino ls [dir] [--depth N]
+  sed, editors     ->  lino edit | insert | delete | replace | write | mv | rm
+Paths are relative to your current directory inside the project.
+
+Editing
+1. Read the lines you will change, with anchors:
+     lino read src/app.go --lines 40:60 --anchors
+   The header gives the version: "src/app.go v=8c21e0 lines 40-60 of 240".
+   Each line is "<n>:<anchor>| text". Plain reads without --anchors are cheaper.
+2. Edit with that version and the anchors (plain line numbers also work).
+   New lines always come from stdin through a quoted heredoc:
+     lino edit src/app.go 42:a3f 44:e42 --v 8c21e0 <<'EOF'
+     replacement lines
+     EOF
+     lino insert src/app.go --after 44:e42 --v 8c21e0 <<'EOF'
+     added line
+     EOF
+       (or --before A, --at-start, --at-end)
+     lino delete src/app.go 42:a3f 44:e42 --v 8c21e0
+     lino replace src/app.go --v 8c21e0 <<'EOF'
+     exact old lines, matched once
+     <<<lino>>>
+     new lines
+     EOF
+     lino write src/new.go <<'EOF'
+     whole file content
+     EOF
+       (overwriting an existing file needs --v V or --force)
+     lino mv src/old.go src/new.go
+     lino rm src/new.go --v 8c21e0
+3. Every edit prints the file's new version (v=old→new). Use it for the next
+   edit of that file; an edit is never applied to lines you have not seen.
+
+Outcomes (exit code) and what to do
+  ok, updated, created (0)  done
+  empty (0)            nothing found or nothing changed
+  truncated (0)        output was cut: run the printed hint (--lines 501:1000, --since N)
+  usage (2)            fix the arguments: lino help
+  not_found (3)        wrong path or change id: lino ls, lino history
+  anchor_mismatch (4)  the lines moved or changed: use the current lines printed, retry
+  ambiguous (5)        replace matched several places: include more lines to make it unique
+  conflict (6)         the target changed since your --v: use the printed lines and new v, retry
+  refused (7)          outside the project, binary or too large: do not retry
+  not_running (8)      no lino project here: run the printed lino init command or ask the user
+  live_exists (9)      drop --direct
+  internal (1)         report the message
+
+Other agents may edit the same files. Set LINO_BY=<your name> once.
+  lino changes --since N [--path GLOB] [--wait 30s]   changes after N; prints the next N
+  lino history [path]      recorded changes, newest first
+  lino show <id>           one change as a diff
+  lino rollback <id>       undo one change (lino rollback alone: your latest)
+  lino rollback <id> --dry-run   show what would be undone
+Add --json to any command for machine-readable output.

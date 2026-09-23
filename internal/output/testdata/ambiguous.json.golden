@@ -1,0 +1,3 @@
+--- stdout
+{"version":1,"ok":false,"outcome":"ambiguous","data":{"candidates":["a.go:3","a.go:9"]},"message":"2 matches"}
+--- stderr

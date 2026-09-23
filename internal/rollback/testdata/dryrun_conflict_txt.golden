@@ -1,0 +1,12 @@
+$ lino rollback 1 --dry-run
+-- stdout --
+would undo 1 (edit f.txt lines 4 by agent-1)
+conflict: cannot undo 1: later changes touched the same lines: 2
+2:CDY| l2
+3:FuI| l3
+4:4Zl| Y
+5:Nmf| l5
+6:9qE| l6
+-- stderr --
+conflict
+hint: lino show 2

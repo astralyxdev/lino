@@ -1,0 +1,5 @@
+$ lino search --words --regex x --direct
+exit 2
+-- stdout --
+-- stderr --
+usage: --regex and --words are exclusive

@@ -1,0 +1,7 @@
+$ lino changes
+exit 0
+-- stdout --
+3  added     wallet/a.go  v=1da82d
+4  added     wallet/b.go  v=56331d
+next 4
+-- stderr --

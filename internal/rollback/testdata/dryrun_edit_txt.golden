@@ -1,0 +1,7 @@
+$ lino rollback 1 --dry-run
+-- stdout --
+would undo 1 (edit wallet/service.go lines 13 by agent-2)
+- 13:     if amt <= 0 || amt > MaxWithdraw {
++ 13:     if amt <= 0 {
+no conflicts
+-- stderr --

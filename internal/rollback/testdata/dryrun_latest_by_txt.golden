@@ -1,0 +1,7 @@
+$ lino rollback --by agent-1 --dry-run
+-- stdout --
+would undo 1 (edit f.txt lines 1 by agent-1)
+- 1: X
++ 1: l1
+no conflicts
+-- stderr --

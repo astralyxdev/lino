@@ -1,0 +1,4 @@
+$ lino changes --since 0 --path *.go --path *.md --json
+-- stdout --
+{"version":1,"ok":true,"outcome":"ok","data":{"events":[{"seq":5,"time":"T","source":"lino","op":"mv","path":"wallet/new.go","from":"old/w.go","kind":"moved"},{"seq":6,"time":"T","source":"lino","op":"rm","path":"wallet/gone.go","kind":"removed","v_before":"123abc"},{"seq":7,"time":"T","source":"lino","op":"delete","path":"wallet/service.go","kind":"modified","v_before":"111111","v_after":"222222","ranges":[{"start":7,"end":6},{"start":20,"end":20}]}],"next":7}}
+-- stderr --

@@ -1,0 +1,6 @@
+$ lino status
+exit 8
+-- stdout --
+-- stderr --
+not_running: no lino process and no initialised root at $ROOT
+hint: lino init $ROOT

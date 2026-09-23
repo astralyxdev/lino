@@ -1,0 +1,5 @@
+$ lino delete wallet/service.go 13:0nd 15 --v 5630d6 --direct
+exit 0
+-- stdout --
+updated wallet/service.go v=5630d6→230e45 deleted lines 13-15
+-- stderr --

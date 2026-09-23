@@ -1,0 +1,11 @@
+$ lino search needle -k 3 --direct
+exit 0
+-- stdout --
+hits/a.txt
+  1   needle 0
+  2   needle 5
+  3   needle 10
+3 hits in 1 file (index)
+-- stderr --
+truncated at 3 hits
+hint: -k 6, or narrow with --path

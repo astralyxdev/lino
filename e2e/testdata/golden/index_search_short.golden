@@ -1,0 +1,8 @@
+$ lino search if --direct
+exit 0
+-- stdout --
+wallet/service.go
+  13  if amt <= 0 {
+1 hit in 1 file (scan)
+-- stderr --
+query shorter than 3 characters: scanned all indexed files

@@ -1,0 +1,5 @@
+$ lino mv wallet/validate.go wallet/check.go --direct
+exit 0
+-- stdout --
+moved wallet/validate.go → wallet/check.go v=3ee51f
+-- stderr --

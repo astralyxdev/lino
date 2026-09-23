@@ -1,0 +1,5 @@
+$ lino write wallet/validate.go --direct
+exit 0
+-- stdout --
+created wallet/validate.go v=3ee51f lines 3
+-- stderr --

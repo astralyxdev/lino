@@ -1,0 +1,6 @@
+$ lino stats extra
+exit 2
+-- stdout --
+-- stderr --
+usage: stats: too many arguments
+hint: lino stats

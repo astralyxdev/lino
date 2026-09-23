@@ -1,0 +1,4 @@
+$ lino rollback 99 --dry-run --json
+-- stdout --
+{"version":1,"ok":false,"outcome":"not_found","message":"no change 99 in history (unknown or pruned)","hint":"lino history"}
+-- stderr --

@@ -1,0 +1,13 @@
+$ lino search 'wallet withdraw' --words --direct
+exit 0
+-- stdout --
+docs/notes.md
+  3   wallet withdraw limits and the wallet service
+wallet/errors.go
+  1   package wallet
+docs/deep/more.md
+  1   withdraw withdraw withdraw
+wallet/service.go
+  12  func Withdraw(ctx context.Context, id, amt int64) error {
+4 hits in 4 files (words)
+-- stderr --

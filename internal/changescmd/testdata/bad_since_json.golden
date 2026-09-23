@@ -1,0 +1,4 @@
+$ lino changes --since x --json
+-- stdout --
+{"version":1,"ok":false,"outcome":"usage","message":"changes: invalid value \"x\" for flag -since: parse error","hint":"lino changes [--since N] [--path P ...] [--wait DURATION]"}
+-- stderr --

@@ -1,0 +1,4 @@
+$ lino show 6 --json
+-- stdout --
+{"version":1,"ok":true,"outcome":"ok","data":{"id":6,"time":"2026-09-23T12:41:12Z","source":"lino","author":"agent-1","op":"write","path":"wallet/validate.go","v_after":"77c1d3","created":true,"hunks":[{"old_start":1,"old":[],"new_start":1,"new":["package wallet",""]}],"diff_lines":2,"shown_lines":2}}
+-- stderr --

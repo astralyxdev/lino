@@ -1,0 +1,6 @@
+$ lino changes --since 1042 --path wallet/**
+-- stdout --
+1043  modified  wallet/service.go   v=8c21e0→5f02aa  lines 12-18
+1044  added     wallet/validate.go  v=77c1d3
+next 1044
+-- stderr --

@@ -1,0 +1,3 @@
+stdout:
+{"version":1,"ok":true,"outcome":"ok","data":{"path":"wallet/service.go","dir":false,"files":1,"lines":240,"size":480,"entries":[],"total":0}}
+stderr:

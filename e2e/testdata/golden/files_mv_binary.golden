@@ -1,0 +1,5 @@
+$ lino mv bin.dat bin2.dat --direct
+exit 0
+-- stdout --
+moved bin.dat → bin2.dat v=1bd95c
+-- stderr --

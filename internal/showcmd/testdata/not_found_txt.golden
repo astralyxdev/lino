@@ -1,0 +1,5 @@
+$ lino show 99
+-- stdout --
+-- stderr --
+not_found: no change 99 in history (unknown or pruned)
+hint: lino history

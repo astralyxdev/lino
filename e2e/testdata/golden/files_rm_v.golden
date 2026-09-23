@@ -1,0 +1,5 @@
+$ lino rm dup.txt --v 59b2bc --direct
+exit 0
+-- stdout --
+removed dup.txt v=59b2bc
+-- stderr --

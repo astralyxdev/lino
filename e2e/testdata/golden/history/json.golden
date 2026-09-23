@@ -1,0 +1,5 @@
+$ lino history --json -k 2 --direct
+exit 0
+-- stdout --
+{"version":1,"ok":true,"outcome":"truncated","data":{"changes":[{"id":6,"time":"<time>","source":"lino","op":"rm","path":"old/gone.txt","removed":true,"v_before":"abc6fd","summary":"removed"},{"id":5,"time":"<time>","source":"lino","author":"agent-1","op":"delete","path":"docs/notes.md","v_before":"c3f9c8","v_after":"27dd8e","ranges":[{"start":1,"end":0}],"summary":"lines 1(del)"}]},"message":"showing the newest 2; older changes exist","hint":"-k 4"}
+-- stderr --

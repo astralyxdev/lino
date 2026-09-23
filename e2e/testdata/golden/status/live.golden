@@ -1,0 +1,11 @@
+$ lino status
+exit 0
+-- stdout --
+root      $ROOT
+id        $ID (st)
+process   live, pid <n>, up <age>
+index     2 files, 24 lines, 0 binary
+watcher   <backend>, 1 dirs
+pending   0
+reconcile <time> (<age> ago, <n>ms): 2 files, 1 added, 0 modified, 0 removed, 0 moved
+-- stderr --

@@ -1,0 +1,4 @@
+$ lino show 10 --json
+-- stdout --
+{"version":1,"ok":true,"outcome":"truncated","data":{"id":10,"time":"2026-09-23T12:41:16Z","source":"lino","op":"edit","path":"big.txt","v_before":"111111","v_after":"222222","hunks":[{"old_start":1,"old":["a1","a2","a3"],"new_start":1,"new":["b1","b2"]}],"diff_lines":8,"shown_lines":5,"truncated":true},"message":"diff cut at 5 of 8 lines"}
+-- stderr --

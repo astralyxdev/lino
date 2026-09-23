@@ -1,0 +1,9 @@
+$ lino changes --since 0
+-- stdout --
+1  modified  other/f.txt  v=aaaaaa→bbbbbb  lines 1
+2  modified  other/f.txt  v=aaaaaa→bbbbbb  lines 2
+3  modified  other/f.txt  v=aaaaaa→bbbbbb  lines 3
+next 3
+-- stderr --
+truncated at 3 events
+hint: --since 3

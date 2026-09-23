@@ -1,0 +1,4 @@
+$ lino rollback 1 --dry-run --json
+-- stdout --
+{"version":1,"ok":false,"outcome":"conflict","data":{"dry_run":true,"undo":{"id":1,"op":"edit","path":"f.txt","author":"agent-1","summary":"lines 4"},"files":[],"conflict":{"message":"cannot undo 1: later changes touched the same lines: 2","path":"f.txt","lines":[{"n":2,"anchor":"CDY","text":"l2"},{"n":3,"anchor":"FuI","text":"l3"},{"n":4,"anchor":"4Zl","text":"Y"},{"n":5,"anchor":"Nmf","text":"l5"},{"n":6,"anchor":"9qE","text":"l6"}]},"diff_lines":0,"shown_lines":0},"hint":"lino show 2"}
+-- stderr --

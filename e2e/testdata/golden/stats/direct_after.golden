@@ -1,0 +1,21 @@
+$ lino stats --direct
+exit 0
+-- stdout --
+root  $ROOT
+id  $ID
+process  not running
+index  3 files, 26 lines, 0 binary, index.db <size>
+history  3 changes, history.db <size>, <size> per 1,000 changes, fragments <size>
+since  <time>, 1 starts, 0 external changes
+calls  9; mutations: conflict 1/4 (25.0%), anchor_mismatch 1/4 (25.0%)
+reindex  2, p50 <dur>, p95 <dur>, max <dur>
+
+COMMAND  CALLS  P50  P95  OUTCOMES
+delete  1  <dur>  <dur>  conflict 1
+edit  2  <dur>  <dur>  anchor_mismatch 1, updated 1
+read  1  <dur>  <dur>  ok 1
+search  1  <dur>  <dur>  ok 1
+stats  2  <dur>  <dur>  ok 2
+stop  1  <dur>  <dur>  ok 1
+write  1  <dur>  <dur>  created 1
+-- stderr --

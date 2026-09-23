@@ -1,0 +1,5 @@
+$ lino history --since -1 --direct
+exit 2
+-- stdout --
+-- stderr --
+usage: --since -1: want N >= 0

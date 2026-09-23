@@ -1,0 +1,5 @@
+$ lino mv dup.txt moved/dup.txt --direct
+exit 0
+-- stdout --
+moved dup.txt → moved/dup.txt v=59b2bc
+-- stderr --

@@ -1,0 +1,9 @@
+$ lino read wallet/service.go --lines 12:15 --direct
+exit 0
+-- stdout --
+wallet/service.go v=5630d6 lines 12-15 of 240
+func Withdraw(ctx context.Context, id, amt int64) error {
+    if amt <= 0 {
+        return ErrInvalidAmount
+    }
+-- stderr --

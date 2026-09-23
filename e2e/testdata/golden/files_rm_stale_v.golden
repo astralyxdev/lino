@@ -1,0 +1,10 @@
+$ lino rm dup.txt --v 000000 --direct
+exit 6
+-- stdout --
+dup.txt
+1:21p| a
+2:hn0| }
+3:ss0| b
+-- stderr --
+conflict: dup.txt changed since v=000000 (now v=59b2bc)
+hint: re-read the file and retry with --v 59b2bc

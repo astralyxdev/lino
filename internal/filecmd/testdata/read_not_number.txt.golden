@@ -1,0 +1,4 @@
+stdout:
+stderr:
+usage: --lines "x": start is not a number
+hint: --lines A:B with 1 <= A <= B

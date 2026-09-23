@@ -1,0 +1,5 @@
+$ lino read ../x --direct
+exit 7
+-- stdout --
+-- stderr --
+refused: ../x: outside the root

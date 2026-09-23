@@ -1,0 +1,5 @@
+$ lino changes --since 0 --path gone.go
+-- stdout --
+6  removed   wallet/gone.go  v=123abc
+next 7
+-- stderr --

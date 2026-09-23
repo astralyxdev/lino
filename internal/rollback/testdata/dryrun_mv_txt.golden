@@ -1,0 +1,6 @@
+$ lino rollback 1 --dry-run
+-- stdout --
+would undo 1 (mv g.txt moved from f.txt)
+move g.txt back to f.txt
+no conflicts
+-- stderr --

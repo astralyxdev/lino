@@ -1,0 +1,4 @@
+$ lino show --json
+-- stdout --
+{"version":1,"ok":false,"outcome":"usage","message":"show: missing arguments","hint":"lino show <id>"}
+-- stderr --

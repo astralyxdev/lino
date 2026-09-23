@@ -1,0 +1,6 @@
+$ lino search --words zebra --direct
+exit 0
+-- stdout --
+0 hits in 0 files (words)
+-- stderr --
+no hits

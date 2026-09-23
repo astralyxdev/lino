@@ -1,0 +1,6 @@
+$ lino history wallet/validate.go --direct
+exit 0
+-- stdout --
+3  <time>  lino  -        mv     wallet/check.go     moved from wallet/validate.go
+2  <time>  lino  agent-1  write  wallet/validate.go  created
+-- stderr --

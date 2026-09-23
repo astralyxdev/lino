@@ -1,0 +1,10 @@
+$ lino search --words withdraw -C 1 --path 'docs/**' --direct
+exit 0
+-- stdout --
+docs/wallet.md
+  2-  
+  3   A withdraw request is checked.
+  4-  Then it is queued.
+  5   Every withdraw is logged.
+2 hits in 1 file (words)
+-- stderr --

@@ -1,0 +1,4 @@
+$ lino show 9 --json
+-- stdout --
+{"version":1,"ok":true,"outcome":"ok","data":{"id":9,"time":"2026-09-23T12:41:15Z","source":"external","op":"external","path":"notes.txt","v_before":"abcdef","removed":true,"hunks":[{"old_start":1,"old":["x"],"new_start":1,"new":[]}],"diff_lines":1,"shown_lines":1}}
+-- stderr --

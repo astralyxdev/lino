@@ -1,0 +1,5 @@
+$ lino history nothing.go --direct
+exit 0
+-- stdout --
+-- stderr --
+no changes

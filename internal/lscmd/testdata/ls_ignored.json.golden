@@ -1,0 +1,3 @@
+stdout:
+{"version":1,"ok":true,"outcome":"empty","data":{"path":"build","dir":true,"files":0,"lines":0,"size":0,"entries":[],"total":0},"message":"build is ignored (.gitignore or .linoignore)"}
+stderr:

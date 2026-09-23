@@ -1,0 +1,4 @@
+$ lino changes --since 1042 --path wallet/** --json
+-- stdout --
+{"version":1,"ok":true,"outcome":"ok","data":{"events":[{"seq":1043,"time":"T","source":"external","op":"external","path":"wallet/service.go","kind":"modified","v_before":"8c21e0","v_after":"5f02aa","ranges":[{"start":12,"end":18}]},{"seq":1044,"time":"T","source":"lino","op":"write","path":"wallet/validate.go","kind":"added","v_after":"77c1d3","ranges":[{"start":1,"end":9}]}],"next":1044}}
+-- stderr --

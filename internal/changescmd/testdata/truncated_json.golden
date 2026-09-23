@@ -1,0 +1,4 @@
+$ lino changes --since 0 --json
+-- stdout --
+{"version":1,"ok":true,"outcome":"truncated","data":{"events":[{"seq":1,"time":"T","source":"lino","op":"edit","path":"other/f.txt","kind":"modified","v_before":"aaaaaa","v_after":"bbbbbb","ranges":[{"start":1,"end":1}]},{"seq":2,"time":"T","source":"lino","op":"edit","path":"other/f.txt","kind":"modified","v_before":"aaaaaa","v_after":"bbbbbb","ranges":[{"start":2,"end":2}]},{"seq":3,"time":"T","source":"lino","op":"edit","path":"other/f.txt","kind":"modified","v_before":"aaaaaa","v_after":"bbbbbb","ranges":[{"start":3,"end":3}]}],"next":3},"message":"truncated at 3 events","hint":"--since 3"}
+-- stderr --

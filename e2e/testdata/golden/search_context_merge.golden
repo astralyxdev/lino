@@ -1,0 +1,16 @@
+$ lino search mark -C 2 --direct
+exit 0
+-- stdout --
+marks.txt
+  1-  one
+  2   mark a
+  3-  two
+  4-  three
+  5   mark b
+  6-  four
+  7-  five
+  8-  six
+  9-  seven
+  10  mark c
+3 hits in 1 file (index)
+-- stderr --

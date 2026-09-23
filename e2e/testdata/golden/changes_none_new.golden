@@ -1,0 +1,6 @@
+$ lino changes --since 2 --direct
+exit 0
+-- stdout --
+next 2
+-- stderr --
+no changes

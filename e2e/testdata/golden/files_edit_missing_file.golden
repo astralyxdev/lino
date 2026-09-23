@@ -1,0 +1,5 @@
+$ lino edit nope.txt 1 1 --v 000000 --direct
+exit 3
+-- stdout --
+-- stderr --
+not_found: nope.txt: no such file

@@ -1,0 +1,12 @@
+$ lino rollback --to 1 --dry-run
+-- stdout --
+would restore 3 files to their state right after 1
+remove h.txt v=7aa7a5
+- 1: new
+f.txt  v=e406be→d9d3b1
+- 6: Y
++ 6: l6
+restore g.txt v=701e08
++ 1: g1
+no conflicts
+-- stderr --

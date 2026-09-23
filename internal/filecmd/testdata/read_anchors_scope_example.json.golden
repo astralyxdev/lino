@@ -1,0 +1,3 @@
+stdout:
+{"version":1,"ok":true,"outcome":"ok","data":{"path":"wallet/service.go","version":"5630d6","start":12,"end":15,"total":240,"lines":["func Withdraw(ctx context.Context, id, amt int64) error {","    if amt <= 0 {","        return ErrInvalidAmount","    }"],"anchors":["rSn","0nd","KA7","JJL"]}}
+stderr:

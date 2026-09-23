@@ -1,0 +1,6 @@
+$ lino frobnicate
+exit 2
+-- stdout --
+-- stderr --
+usage: unknown command "frobnicate"
+hint: lino help

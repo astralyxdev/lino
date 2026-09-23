@@ -1,0 +1,5 @@
+$ lino edit ../x 1 1 --v 000000 --direct
+exit 7
+-- stdout --
+-- stderr --
+refused: ../x: outside the root

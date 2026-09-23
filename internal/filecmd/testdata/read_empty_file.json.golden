@@ -1,0 +1,3 @@
+stdout:
+{"version":1,"ok":true,"outcome":"empty","data":{"path":"empty.txt","version":"e3b0c4","start":0,"end":0,"total":0,"lines":[]},"message":"empty file"}
+stderr:

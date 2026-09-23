@@ -1,0 +1,5 @@
+$ lino search x -C -1 --direct
+exit 2
+-- stdout --
+-- stderr --
+usage: -C must be between 0 and 10

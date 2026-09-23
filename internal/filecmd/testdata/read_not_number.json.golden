@@ -1,0 +1,3 @@
+stdout:
+{"version":1,"ok":false,"outcome":"usage","message":"--lines \"x\": start is not a number","hint":"--lines A:B with 1 <= A <= B"}
+stderr:

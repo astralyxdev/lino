@@ -1,0 +1,3 @@
+stdout:
+stderr:
+build/out.txt is ignored (.gitignore or .linoignore)

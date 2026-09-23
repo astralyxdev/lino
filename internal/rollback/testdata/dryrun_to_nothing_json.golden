@@ -1,0 +1,4 @@
+$ lino rollback --to 1 --dry-run --json
+-- stdout --
+{"version":1,"ok":true,"outcome":"empty","data":{"to":1,"files":[]}}
+-- stderr --

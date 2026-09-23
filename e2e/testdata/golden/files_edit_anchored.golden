@@ -1,0 +1,5 @@
+$ lino edit wallet/service.go 13:0nd 15 --v 5630d6 --direct
+exit 0
+-- stdout --
+updated wallet/service.go v=5630d6→332a5c lines 13-15
+-- stderr --

@@ -1,0 +1,9 @@
+$ lino search --words withdraw --path 'wallet/**' --direct
+exit 0
+-- stdout --
+wallet/service.go
+  3   // Withdraw moves funds.
+  4   func Withdraw(amt int64) error {
+  8   return withdrawFunds(amt)
+3 hits in 1 file (words)
+-- stderr --

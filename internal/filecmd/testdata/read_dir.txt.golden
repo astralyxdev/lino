@@ -1,0 +1,4 @@
+stdout:
+stderr:
+refused: sub: is a directory
+hint: lino ls sub

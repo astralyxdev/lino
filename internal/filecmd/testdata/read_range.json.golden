@@ -1,0 +1,3 @@
+stdout:
+{"version":1,"ok":true,"outcome":"ok","data":{"path":"a.go","version":"04425d","start":2,"end":3,"total":3,"lines":["","func A() {}"]}}
+stderr:

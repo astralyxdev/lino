@@ -1,0 +1,5 @@
+$ lino rm bin.dat --force --direct
+exit 0
+-- stdout --
+removed bin.dat v=1bd95c (binary)
+-- stderr --

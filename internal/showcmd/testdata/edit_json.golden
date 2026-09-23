@@ -1,0 +1,4 @@
+$ lino show 1 --json
+-- stdout --
+{"version":1,"ok":true,"outcome":"ok","data":{"id":1,"time":"2026-09-23T12:41:07Z","source":"lino","author":"agent-2","op":"edit","path":"wallet/service.go","v_before":"8c21e0","v_after":"5f02aa","hunks":[{"old_start":13,"old":["    if amt <= 0 {"],"new_start":13,"new":["    if amt <= 0 || amt > MaxWithdraw {"]},{"old_start":21,"old":[],"new_start":21,"new":["    log.Debug(\"withdraw\")",""]},{"old_start":31,"old":["// old","// older"],"new_start":33,"new":[]}],"diff_lines":6,"shown_lines":6}}
+-- stderr --

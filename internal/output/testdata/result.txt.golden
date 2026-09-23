@@ -1,0 +1,5 @@
+--- stdout
+wallet/service.go v=8c21e0 lines 12-13
+12:a3f| func Withdraw() error {
+13:9c1|     if amt <= 0 {
+--- stderr

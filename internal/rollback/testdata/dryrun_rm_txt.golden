@@ -1,0 +1,12 @@
+$ lino rollback 1 --dry-run
+-- stdout --
+would undo 1 (rm f.txt removed)
+restore f.txt v=7f79f1
++ 1: l1
++ 2: l2
++ 3: l3
++ 4: l4
++ 5: l5
++ 6: l6
+no conflicts
+-- stderr --

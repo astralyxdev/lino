@@ -1,0 +1,5 @@
+--- stdout
+a.go:3
+a.go:9
+--- stderr
+ambiguous: 2 matches

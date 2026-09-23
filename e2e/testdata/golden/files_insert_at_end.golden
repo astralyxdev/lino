@@ -1,0 +1,5 @@
+$ lino insert crlf.txt --at-end --v e44b70 --direct
+exit 0
+-- stdout --
+updated crlf.txt v=e44b70→61afac lines 4-4
+-- stderr --

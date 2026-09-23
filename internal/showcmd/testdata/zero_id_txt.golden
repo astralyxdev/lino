@@ -1,0 +1,5 @@
+$ lino show 0
+-- stdout --
+-- stderr --
+usage: invalid change id "0"
+hint: lino history

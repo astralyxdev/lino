@@ -1,0 +1,6 @@
+$ lino history a b --direct
+exit 2
+-- stdout --
+-- stderr --
+usage: history: too many arguments
+hint: lino history [path] [--since N] [--by A] [-k N]

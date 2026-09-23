@@ -1,0 +1,8 @@
+$ lino search '^\S{7}$' --regex --direct
+exit 0
+-- stdout --
+.linoignore
+  1   secret/
+1 hit in 1 file (scan)
+-- stderr --
+regex has no literal run of 3+ characters: scanned all indexed files

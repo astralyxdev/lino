@@ -1,0 +1,3 @@
+stdout:
+stderr:
+usage: --depth must be >= 0
