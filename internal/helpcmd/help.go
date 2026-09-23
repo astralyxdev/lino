@@ -23,7 +23,7 @@ import (
 var Agent string
 
 // AgentVersion is the version of the Agent block.
-const AgentVersion = 1
+const AgentVersion = 2
 
 func init() { cli.Register(Command) }
 
@@ -76,7 +76,7 @@ func Help(r *cli.Registry, name string, agent bool) (output.Result, error) {
 		if !ok {
 			return output.Result{}, outcome.New(outcome.Usage, "unknown command %q", name).WithHint("lino help")
 		}
-		return output.Result{Data: UsageData{Text: "usage: " + cmd.Synopsis() + "\n"}}, nil
+		return output.Result{Data: UsageData{Text: cmd.Help()}}, nil
 	}
 	var b bytes.Buffer
 	r.Usage(&b)

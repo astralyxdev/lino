@@ -219,8 +219,12 @@ func ExternalRanges(ctx context.Context, db *index.DB, u index.Update) []Range {
 }
 
 // FromUpdate builds the external entry for an index update, without line
-// ranges (see ExternalRanges); ok is false for Unchanged.
+// ranges (see ExternalRanges); ok is false for Unchanged and for a file that
+// only left the index because it became ignored (it was not changed).
 func FromUpdate(u index.Update) (Entry, bool) {
+	if u.Op == index.Removed && u.Ignored {
+		return Entry{}, false
+	}
 	e := Entry{Source: SourceExternal, Op: "external", Path: u.Path, VBefore: short(u.OldHash), VAfter: short(u.Hash)}
 	switch u.Op {
 	case index.Added:

@@ -51,6 +51,10 @@ type Update struct {
 	// OldBinary reports that the previous row was binary (Old is then "").
 	Old       string
 	OldBinary bool
+	// Ignored marks a Removed update from a reconcile whose file still exists
+	// on disk: it left the index because it is now ignored (a .gitignore or
+	// .linoignore change), not because it was deleted.
+	Ignored bool
 }
 
 // FileInfo is one row of the files table.

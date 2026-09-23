@@ -187,7 +187,7 @@ func historyDisk(ctx context.Context, e *harness.Env) ([]harness.Metric, error) 
 			Note: "without -wal and -shm, before any checkpoint of the rest"},
 		{Name: "history fragments per 1,000 edits", Value: float64(after.History.FragmentBytes-before.History.FragmentBytes) / float64(edits) * 1000 / mb,
 			Unit: "MB", Note: "stored change fragments, from lino stats"},
-		{Name: "history total per 1,000 changes", Value: float64(after.History.Per1000) / mb, Unit: "MB",
+		{Name: "history total per 1,000 changes", Value: float64(after.History.DBBytes) / float64(after.History.Changes) * 1000 / mb, Unit: "MB",
 			Note: fmt.Sprintf("lino stats: whole db over all %d changes, fixed overhead included", after.History.Changes)},
 		{Name: "edit wall time, mean", Value: harness.Ms(took) / float64(edits), Unit: "ms", Note: "end-to-end, client process included"},
 		fails,

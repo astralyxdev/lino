@@ -1,0 +1,6 @@
+$ lino search invalid amount --direct
+exit 2
+-- stdout --
+-- stderr --
+usage: search: too many arguments
+hint: quote a multi-word query: lino search "a b"

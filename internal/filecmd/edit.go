@@ -18,11 +18,11 @@ func init() { cli.Register(EditCommand) }
 // EditCommand is `lino edit`.
 var EditCommand = &cli.Command{
 	Name:    "edit",
-	Usage:   "<file> <start> <end> --v V",
+	Usage:   "<file> <start> [<end>] --v V",
 	Summary: "replace a line range with lines from stdin",
 	Accept:  cli.Mutating,
 	Stdin:   true,
-	MinArgs: 3,
+	MinArgs: 2,
 	MaxArgs: 3,
 	Setup: func(fs *flag.FlagSet) cli.RunFunc {
 		v := fs.String("v", "", "version of the file you last read")
@@ -44,7 +44,7 @@ var EditCommand = &cli.Command{
 }
 
 // EditRequest is one edit call. Start and End are anchors ("13:9c1") or
-// plain line numbers ("13").
+// plain line numbers; an empty End means the single line Start ("13").
 type EditRequest struct {
 	Path       string
 	Start, End string
@@ -72,6 +72,9 @@ func (d EditData) WriteText(w io.Writer) error {
 
 // Edit replaces the anchored range with req.Lines.
 func Edit(ctx context.Context, cwd string, req EditRequest) (output.Result, error) {
+	if req.End == "" {
+		req.End = req.Start
+	}
 	start, err := anchor.Parse(req.Start)
 	if err != nil {
 		return output.Result{}, err

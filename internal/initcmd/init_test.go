@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/astralyx/lino/internal/config"
+	"github.com/astralyx/lino/internal/ignore"
 	"github.com/astralyx/lino/internal/index"
 	"github.com/astralyx/lino/internal/outcome"
 	"github.com/astralyx/lino/internal/registry"
@@ -162,3 +163,49 @@ func TestGitExclude(t *testing.T) {
 }
 
 func ptr(s string) *string { return &s }
+
+func TestRunDefaultLinoignore(t *testing.T) {
+	tests := []struct {
+		name     string
+		existing *string
+		want     bool // created
+	}{
+		{"missing", nil, true},
+		{"empty", new(""), false},
+		{"custom", new("*.log\n"), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			root := tempDir(t)
+			write(t, filepath.Join(root, "a.go"), "package a\n")
+			write(t, filepath.Join(root, "node_modules", "x", "i.js"), "x\n")
+			if tt.existing != nil {
+				write(t, filepath.Join(root, ignore.LinoignoreFile), *tt.existing)
+			}
+			res, err := Run(ctx, Request{Cwd: root, Linoignore: true})
+			if err != nil {
+				t.Fatal(err)
+			}
+			d := res.Data.(Data)
+			if d.CreatedLinoignore != tt.want {
+				t.Errorf("CreatedLinoignore = %v, want %v", d.CreatedLinoignore, tt.want)
+			}
+			got, err := os.ReadFile(filepath.Join(root, ignore.LinoignoreFile))
+			if err != nil {
+				t.Fatal(err)
+			}
+			want := string(ignore.DefaultLinoignoreContent())
+			if tt.existing != nil {
+				want = *tt.existing
+			}
+			if string(got) != want {
+				t.Errorf(".linoignore = %q, want %q", got, want)
+			}
+			// node_modules is never indexed when the defaults were written.
+			if wantFiles := map[bool]int{true: 2, false: 3}[tt.want]; d.Files != wantFiles {
+				t.Errorf("files = %d, want %d", d.Files, wantFiles)
+			}
+		})
+	}
+}

@@ -118,7 +118,11 @@ func Run(ctx context.Context, req RunRequest) (output.Result, error) {
 	}
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	p, err := Start(ctx, Options{Dir: req.Dir, Name: req.Name, Idle: idle, Registry: reg})
+	opt := Options{Dir: req.Dir, Name: req.Name, Idle: idle, Registry: reg}
+	if created {
+		opt.Created, opt.By = []string{ignore.LinoignoreFile}, os.Getenv("LINO_BY")
+	}
+	p, err := Start(ctx, opt)
 	if err != nil {
 		reportReady(ready, RunData{}, "", err)
 		return output.Result{}, err
@@ -146,7 +150,8 @@ func Run(ctx context.Context, req RunRequest) (output.Result, error) {
 }
 
 // ensureLinoignore writes the default .linoignore into the root of dir before
-// the startup reconcile, so the defaults already apply. Outside an initialised
+// the startup reconcile, so the defaults already apply. lino init creates it
+// too; this covers roots initialised before it did. Outside an initialised
 // root it does nothing and leaves the error to Start.
 func ensureLinoignore(reg *registry.Registry, dir string) (bool, error) {
 	root, ok, err := reg.FindRoot(dirOrCwd(dir))

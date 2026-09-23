@@ -1,4 +1,4 @@
-# lino agent instructions v1
+# lino agent instructions v2
 
 Use lino for every file operation in this project, not cat, grep, find or sed.
   cat, head, tail  ->  lino read <file> [--lines A:B]
@@ -13,15 +13,19 @@ Editing
    The header gives the version: "src/app.go v=8c21e0 lines 40-60 of 240".
    Each line is "<n>:<anchor>| text". Plain reads without --anchors are cheaper.
 2. Edit with that version and the anchors (plain line numbers also work).
+   One anchor is one line; two anchors are a range.
    New lines always come from stdin through a quoted heredoc:
+     lino edit src/app.go 42:a3f --v 8c21e0 <<'EOF'
+     replacement for line 42
+     EOF
      lino edit src/app.go 42:a3f 44:e42 --v 8c21e0 <<'EOF'
-     replacement lines
+     replacement for lines 42-44
      EOF
      lino insert src/app.go --after 44:e42 --v 8c21e0 <<'EOF'
      added line
      EOF
        (or --before A, --at-start, --at-end)
-     lino delete src/app.go 42:a3f 44:e42 --v 8c21e0
+     lino delete src/app.go 42:a3f --v 8c21e0
      lino replace src/app.go --v 8c21e0 <<'EOF'
      exact old lines, matched once
      <<<lino>>>
@@ -54,6 +58,6 @@ Other agents may edit the same files. Set LINO_BY=<your name> once.
   lino changes --since N [--path GLOB] [--wait 30s]   changes after N; prints the next N
   lino history [path]      recorded changes, newest first
   lino show <id>           one change as a diff
-  lino rollback <id>       undo one change (lino rollback alone: your latest)
+  lino rollback <id>       undo one change (no id: your newest still in effect; repeat to step back)
   lino rollback <id> --dry-run   show what would be undone
 Add --json to any command for machine-readable output.

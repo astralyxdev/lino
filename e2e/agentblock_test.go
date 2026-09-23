@@ -28,9 +28,33 @@ func TestAgentBlock(t *testing.T) {
 	}
 	p := parseAgentBlock(r.Stdout)
 	t.Logf("%d examples, %d synopses, %d mentions, %d outcome rows", len(p.examples), len(p.synopses), len(p.mentions), len(p.rows))
+	for _, cmd := range []string{"edit", "delete"} {
+		if !hasSingleAnchor(p.examples, cmd) {
+			t.Errorf("block has no single-anchor lino %s example", cmd)
+		}
+	}
 	for _, p := range checkAgentBlock(t, r.Stdout, false) {
 		t.Error(p)
 	}
+}
+
+// hasSingleAnchor reports whether some example runs cmd with exactly one anchor.
+func hasSingleAnchor(exs []blockExample, cmd string) bool {
+	for _, ex := range exs {
+		if ex.args[0] != cmd {
+			continue
+		}
+		n := 0
+		for _, a := range ex.args[1:] {
+			if anchorTok.MatchString(a) {
+				n++
+			}
+		}
+		if n == 1 {
+			return true
+		}
+	}
+	return false
 }
 
 // TestAgentBlockBroken proves the check catches drift: each mutation of the
@@ -48,6 +72,7 @@ func TestAgentBlockBroken(t *testing.T) {
 		{"missing outcome", "  refused (7)", "  (7)"},
 		{"unknown outcome", "live_exists (9)", "live_exist (9)"},
 		{"bad mention", "lino ls, lino history", "lino ls, lino hist"},
+		{"single anchor past eof", "delete src/app.go 42:a3f --v", "delete src/app.go 42:a3f 999 --v"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

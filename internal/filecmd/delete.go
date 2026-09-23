@@ -18,10 +18,10 @@ func init() { cli.Register(DeleteCommand) }
 // DeleteCommand is `lino delete`. It never reads stdin.
 var DeleteCommand = &cli.Command{
 	Name:    "delete",
-	Usage:   "<file> <start> <end> --v V",
+	Usage:   "<file> <start> [<end>] --v V",
 	Summary: "delete a line range",
 	Accept:  cli.Mutating,
-	MinArgs: 3,
+	MinArgs: 2,
 	MaxArgs: 3,
 	Setup: func(fs *flag.FlagSet) cli.RunFunc {
 		v := fs.String("v", "", "file version from the last read")
@@ -34,7 +34,7 @@ var DeleteCommand = &cli.Command{
 }
 
 // DeleteRequest is one delete call. Start and End are anchors ("13:9c1") or
-// plain line numbers.
+// plain line numbers; an empty End means the single line Start.
 type DeleteRequest struct {
 	Path, Start, End, V, By string
 }
@@ -60,6 +60,9 @@ func (d DeleteData) WriteText(w io.Writer) error {
 
 // Delete removes an anchored line range in the workspace found from cwd.
 func Delete(ctx context.Context, cwd string, req DeleteRequest) (output.Result, error) {
+	if req.End == "" {
+		req.End = req.Start
+	}
 	start, err := anchor.Parse(req.Start)
 	if err != nil {
 		return output.Result{}, err

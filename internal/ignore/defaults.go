@@ -13,7 +13,7 @@ import (
 // LinoignoreFile is the name of lino's own ignore file.
 const LinoignoreFile = ".linoignore"
 
-// DefaultLinoignore lists the patterns `lino run` writes to a new .linoignore.
+// DefaultLinoignore lists the patterns `lino init` (or `lino run`) writes to a new .linoignore.
 var DefaultLinoignore = []string{
 	".git/",
 	"node_modules/",
@@ -38,7 +38,7 @@ var DefaultLinoignore = []string{
 	"*.map",
 }
 
-const linoignoreHeader = "# created by lino run; same syntax as .gitignore\n"
+const linoignoreHeader = "# created by lino; same syntax as .gitignore\n"
 
 // DefaultLinoignoreContent returns the bytes of a default .linoignore.
 func DefaultLinoignoreContent() []byte {

@@ -33,7 +33,11 @@ func init() { cli.Register(Command) }
 var Command = &cli.Command{
 	Name:    "rollback",
 	Usage:   "[<id>] | --to <id> [--path P ...] [--dry-run]",
-	Summary: "undo one change (default: the latest by --by, else overall) as a new change",
+	Summary: "undo one change as a new change (no id: the newest still in effect, by --by if set)",
+	Details: `With no id, undoes the newest change still in effect (by --by / LINO_BY when set,
+else by anyone). Repeated calls step back like an undo stack: a rollback is
+skipped together with the change it undid; undoing a rollback (a redo) counts
+as a change. It prints which change it undid. With several agents, pass an id.`,
 	Accept:  cli.Mutating,
 	MinArgs: 0,
 	MaxArgs: 1,

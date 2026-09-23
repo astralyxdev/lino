@@ -1,0 +1,10 @@
+$ lino help edit
+exit 0
+-- stdout --
+usage: lino edit <file> <start> [<end>] --v V
+global flags:
+  -i, --id ID|NAME  target the live process with this id or name
+  --direct          run in this process, without the live process
+  --by LABEL        author label for history (default $LINO_BY)
+  --json            JSON output
+-- stderr --

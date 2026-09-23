@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"encoding/json"
 	"regexp"
 	"strings"
 	"testing"
@@ -64,16 +65,36 @@ func TestStats(t *testing.T) {
 		{[]string{"edit", "a.txt", "1:zzz", "1:zzz", "--v", "000000"}, "y\n", 4},
 		{[]string{"read", "a.txt"}, "", 0},
 		{[]string{"search", "three"}, "", 0},
+		{[]string{"changes", "--path", "none/**", "--wait", "1s"}, "", 0},
 	} {
 		h.ExpectExit(h.Exec(Cmd{Args: c.args, Stdin: c.stdin}), c.exit)
 	}
 	golden("live", 0, "stats")
 	golden("live_json", 0, "stats", "--json")
+
+	// Time held by changes --wait is not latency.
+	r := h.Run("stats", "--json")
+	var env struct {
+		Data struct {
+			Commands []struct {
+				Name string `json:"name"`
+				P95  int64  `json:"p95_us"`
+			} `json:"commands"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal([]byte(r.Stdout), &env); err != nil {
+		t.Fatal(err)
+	}
+	for _, c := range env.Data.Commands {
+		if c.Name == "changes" && c.P95 >= 500_000 {
+			t.Errorf("changes p95 %dµs includes --wait time", c.P95)
+		}
+	}
 	h.ExpectExit(h.Run("stop"), 0)
 	expectGone(t, h, done)
 
 	// Counters survive the process: direct mode reads the saved file.
-	r := h.Run("stats", "--direct")
+	r = h.Run("stats", "--direct")
 	h.ExpectExit(r, 0)
 	h.Golden("stats/direct_after", maskStats(h, r))
 	if !regexp.MustCompile(`(?m)^stop +1 `).MatchString(r.Stdout) {

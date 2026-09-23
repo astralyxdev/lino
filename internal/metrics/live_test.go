@@ -12,6 +12,7 @@ import (
 	"github.com/astralyx/lino/internal/initcmd"
 	"github.com/astralyx/lino/internal/live"
 	"github.com/astralyx/lino/internal/outcome"
+	"github.com/astralyx/lino/internal/output"
 	"github.com/astralyx/lino/internal/proto"
 	"github.com/astralyx/lino/internal/registry"
 	_ "github.com/astralyx/lino/internal/reindex"
@@ -92,4 +93,42 @@ func TestLiveCountersSurviveRestart(t *testing.T) {
 	if s.Reindex.Count != 1 {
 		t.Fatalf("reindex count %d", s.Reindex.Count)
 	}
+}
+
+func TestMiddlewareExcludesWait(t *testing.T) {
+	p := &live.Process{}
+	col := Load(filepath.Join(t.TempDir(), FileName))
+	mu.Lock()
+	byProc[p] = &running{c: col}
+	mu.Unlock()
+	t.Cleanup(func() {
+		mu.Lock()
+		delete(byProc, p)
+		mu.Unlock()
+	})
+	for _, c := range []struct {
+		name string
+		wait bool
+		min  time.Duration
+		max  time.Duration
+	}{
+		{"idle", true, 0, 100 * time.Millisecond},
+		{"busy", false, 200 * time.Millisecond, time.Hour},
+	} {
+		h := middleware(p, func(ctx context.Context, req *proto.Request) (output.Result, error) {
+			t0 := time.Now()
+			time.Sleep(200 * time.Millisecond)
+			if c.wait {
+				Waited(ctx, time.Since(t0))
+			}
+			return output.Result{Outcome: outcome.OK}, nil
+		})
+		if _, err := h(context.Background(), proto.NewRequest(c.name)); err != nil {
+			t.Fatal(err)
+		}
+		if got := col.Snapshot().Commands[c.name].Latency.Max; got < c.min || got > c.max {
+			t.Errorf("%s: latency %v, want in [%v, %v]", c.name, got, c.min, c.max)
+		}
+	}
+	Waited(context.Background(), time.Second) // no collector: a no-op
 }

@@ -1,5 +1,5 @@
 $ lino status --json
 exit 0
 -- stdout --
-{"version":1,"ok":true,"outcome":"ok","data":{"root":"$ROOT","id":"$ID","name":"st","live":true,"pid":<n>,"started":"<time>","uptime_s":<n>,"indexed":true,"totals":{"files":2,"lines":24,"binary":0},"watcher":"<backend>, 1 dirs","pending":0,"last_reconcile":{"at":"<time>","duration_ms":<n>,"files":2,"added":1,"modified":0,"removed":0,"moved":0}}}
+{"version":1,"ok":true,"outcome":"ok","data":{"root":"$ROOT","id":"$ID","name":"st","live":true,"pid":<n>,"started":"<time>","uptime_s":<n>,"indexed":true,"totals":{"files":2,"lines":24,"binary":0},"watcher":"<backend>, 1 dirs","pending":0,"last_reconcile":{"at":"<time>","duration_ms":<n>,"files":2,"added":0,"modified":0,"removed":0,"moved":0}}}
 -- stderr --

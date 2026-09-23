@@ -119,19 +119,22 @@ func TestSearchJSON(t *testing.T) {
 func TestSearchErrors(t *testing.T) {
 	root := newRoot(t, fixture)
 	tests := []struct {
-		name string
-		cwd  string
-		args []string
-		code int
+		name  string
+		cwd   string
+		args  []string
+		code  int
+		errIn string
 	}{
-		{"no query", root, []string{"search"}, 2},
-		{"empty query", root, []string{"search", ""}, 2},
-		{"two queries", root, []string{"search", "a", "b"}, 2},
-		{"not initialised", t.TempDir(), []string{"search", "abc"}, 8},
+		{"no query", root, []string{"search"}, 2, ""},
+		{"empty query", root, []string{"search", ""}, 2, ""},
+		{"two queries", root, []string{"search", "a", "b"}, 2, ""},
+		{"not initialised", t.TempDir(), []string{"search", "abc"}, 8, ""},
+		{"anchors", root, []string{"search", "Withdraw", "--anchors"}, 2, "lino read <file> --lines A:B --anchors"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if _, errOut, code := run(t, tt.cwd, tt.args...); code != tt.code {
+			_, errOut, code := run(t, tt.cwd, tt.args...)
+			if code != tt.code || !strings.Contains(errOut, tt.errIn) {
 				t.Errorf("code %d, want %d (%s)", code, tt.code, errOut)
 			}
 		})

@@ -250,3 +250,28 @@ func TestReconcileLargeCorpus(t *testing.T) {
 		t.Errorf("reconcile too slow: %v", s.Duration)
 	}
 }
+
+func TestReconcileMarksIgnoredRemovals(t *testing.T) {
+	root := newRoot(t)
+	db := mustOpen(t, root)
+	defer db.Close()
+	writeFile(t, root, "keep.go", "package k\n")
+	writeFile(t, root, "gone.go", "package g\n")
+	writeFile(t, root, "dep/x.js", "x\n")
+	reconcile(t, db, root)
+
+	if err := os.Remove(filepath.Join(root, "gone.go")); err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, root, ".linoignore", "dep/\n")
+	got := map[string]bool{}
+	for _, u := range reconcile(t, db, root).Changes {
+		if u.Op == Removed {
+			got[u.Path] = u.Ignored
+		}
+	}
+	want := map[string]bool{"gone.go": false, "dep/x.js": true}
+	if fmt.Sprint(got) != fmt.Sprint(want) {
+		t.Errorf("removed (path: ignored) = %v, want %v", got, want)
+	}
+}

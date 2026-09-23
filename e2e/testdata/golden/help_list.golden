@@ -1,0 +1,28 @@
+$ lino help
+exit 0
+-- stdout --
+usage: lino <command> [args] [--json]
+  lino changes [--since N] [--path P ...] [--wait DURATION] # changes after position N, and the next position
+  lino delete <file> <start> [<end>] --v V         # delete a line range
+  lino edit <file> <start> [<end>] --v V           # replace a line range with lines from stdin
+  lino help [command] [--agent]                    # list commands; --agent prints instructions for an agent's system prompt
+  lino history [path] [--since N] [--by A] [-k N]  # list recorded changes, newest first
+  lino index                                       # force a full reconcile
+  lino init [dir]                                  # create .lino/ and build the index
+  lino insert <file> (--before A | --after A | --at-start | --at-end) --v V # insert stdin lines before or after an anchor, or at the start or end
+  lino ls [path] [--depth N]                       # list indexed files with line counts and sizes
+  lino mv <from> <to>                              # move or rename a file; the target must not exist
+  lino ps                                          # running processes: id, name, root, pid, uptime
+  lino read <file> [--lines A:B] [--anchors]       # print a file or a line range
+  lino replace <file> --v V [--sep S]              # replace an exact unique block; old and new from stdin
+  lino rm <file> [--v V | --force]                 # remove a file
+  lino rollback [<id>] | --to <id> [--path P ...] [--dry-run] # undo one change as a new change (no id: the newest still in effect, by --by if set)
+  lino run [dir] [--name N] [--idle D] [--foreground] # start (or find) the live process; prints its id
+  lino search <query> [--regex | --words] [--path P ...] [-k N] [-C N] # find lines containing a string, from the index
+  lino show <id>                                   # one change as a diff
+  lino stats                                       # index and history size, memory, per-command latency and outcome rates
+  lino status                                      # index and watcher state
+  lino stop                                        # stop the live process
+  lino write <file> [--v V | --force]              # create a file, or overwrite it; content from stdin
+global flags: -i/--id ID|NAME, --json; --direct (file commands), --by (mutating); lino help <command> for details
+-- stderr --

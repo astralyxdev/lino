@@ -43,6 +43,8 @@ type Command struct {
 	Name    string
 	Usage   string // synopsis after the name, e.g. "<file> [--lines A:B] [--anchors]"
 	Summary string
+	// Details are extra lines `lino help <name>` prints after the synopsis.
+	Details string
 	Accept  Accept
 	MinArgs int
 	MaxArgs int // -1 = unlimited
@@ -148,6 +150,7 @@ func (r *Registry) Usage(w io.Writer) {
 		}
 		fmt.Fprintln(w, line)
 	}
+	fmt.Fprintln(w, "global flags: -i/--id ID|NAME, --json; --direct (file commands), --by (mutating); lino help <command> for details")
 }
 
 // Synopsis is "lino <name> <usage>".
@@ -156,6 +159,27 @@ func (c *Command) Synopsis() string {
 		return "lino " + c.Name
 	}
 	return "lino " + c.Name + " " + c.Usage
+}
+
+// Help is the synopsis followed by the global flags the command accepts.
+func (c *Command) Help() string {
+	var b strings.Builder
+	b.WriteString("usage: " + c.Synopsis() + "\n")
+	if c.Details != "" {
+		b.WriteString(strings.TrimRight(c.Details, "\n") + "\n")
+	}
+	b.WriteString("global flags:\n")
+	if c.Accept&AcceptID != 0 {
+		b.WriteString("  -i, --id ID|NAME  target the live process with this id or name\n")
+	}
+	if c.Accept&AcceptDirect != 0 {
+		b.WriteString("  --direct          run in this process, without the live process\n")
+	}
+	if c.Accept&AcceptBy != 0 {
+		b.WriteString("  --by LABEL        author label for history (default $LINO_BY)\n")
+	}
+	b.WriteString("  --json            JSON output\n")
+	return b.String()
 }
 
 // Parse resolves argv (without the program name) into a Call.
@@ -314,7 +338,7 @@ func (r *Registry) Main(ctx context.Context, argv []string, env Env, stdout, std
 		if argv[0] == "-h" || argv[0] == "--help" || (argv[0] == "help" && !custom) {
 			if len(argv) > 1 {
 				if cmd, ok := r.cmds[argv[1]]; ok {
-					fmt.Fprintln(stdout, "usage: "+cmd.Synopsis())
+					fmt.Fprint(stdout, cmd.Help())
 					return 0
 				}
 			}
@@ -325,7 +349,7 @@ func (r *Registry) Main(ctx context.Context, argv []string, env Env, stdout, std
 	c, err := r.Parse(argv, env)
 	var h errHelp
 	if errors.As(err, &h) {
-		fmt.Fprintln(stdout, "usage: "+h.cmd.Synopsis())
+		fmt.Fprint(stdout, h.cmd.Help())
 		return 0
 	}
 	if err != nil {

@@ -101,6 +101,20 @@ func TestEdit(t *testing.T) {
 			name: "bad anchor", content: five,
 			start: editLit("x"), end: editLit("2"), stdin: "x\n", wantCode: 2,
 		},
+		{
+			name: "single anchor", content: five,
+			start: func(c string) string { return anc(c, 3) }, end: editLit(""),
+			stdin: "THREE\n", want: "one\ntwo\nTHREE\nfour\nfive\n", wantOut: "lines 3-3",
+		},
+		{
+			name: "single anchor relocated", content: "zero\n" + five,
+			start: func(string) string { return anc(five, 2) }, end: editLit(""),
+			stdin: "TWO\n", want: "zero\none\nTWO\nthree\nfour\nfive\n", wantOut: "lines 3-3",
+		},
+		{
+			name: "single anchor stale", content: five,
+			start: editLit("2:zzz"), end: editLit(""), stdin: "x\n", wantCode: 4, wantOut: "2:" + anchor.Hash("two"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -110,7 +124,10 @@ func TestEdit(t *testing.T) {
 			if tt.v != nil {
 				v = tt.v(tt.content)
 			}
-			args := []string{"edit", "f.txt", tt.start(tt.content), tt.end(tt.content)}
+			args := []string{"edit", "f.txt", tt.start(tt.content)}
+			if end := tt.end(tt.content); end != "" {
+				args = append(args, end)
+			}
 			if v != "" {
 				args = append(args, "--v", v)
 			}

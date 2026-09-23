@@ -29,7 +29,7 @@ func TestHelp(t *testing.T) {
 		{[]string{"help"}, 0, "  lino read <file>"},
 		{[]string{"-h"}, 0, "  lino help [command] [--agent]"},
 		{[]string{"--help"}, 0, "usage: lino <command>"},
-		{[]string{"help", "edit"}, 0, "usage: lino edit <file> <start> <end> --v V\n"},
+		{[]string{"help", "edit"}, 0, "usage: lino edit <file> <start> [<end>] --v V\n"},
 		{[]string{"help", "--agent"}, 0, Header() + "\n"},
 		{[]string{"help", "nope"}, 2, ""},
 		{[]string{"help", "edit", "--agent"}, 2, ""},

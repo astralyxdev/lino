@@ -1,5 +1,5 @@
 $ lino index --direct --json
 exit 0
 -- stdout --
-{"version":1,"ok":true,"outcome":"ok","data":{"root":"$ROOT","files":3,"added":0,"modified":0,"removed":0,"moved":0,"unchanged":3,"duration_ms":<n>}}
+{"version":1,"ok":true,"outcome":"ok","data":{"root":"$ROOT","files":4,"added":0,"modified":0,"removed":0,"moved":0,"unchanged":4,"duration_ms":<n>}}
 -- stderr --

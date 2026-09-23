@@ -1,6 +1,6 @@
 $ lino history
 exit 0
 -- stdout --
-2  <time>  lino      me  write     b.txt        created
-1  <time>  external  -   external  .linoignore  created
+2  <time>  lino  me  write  b.txt        created
+1  <time>  lino  -   write  .linoignore  created
 -- stderr --

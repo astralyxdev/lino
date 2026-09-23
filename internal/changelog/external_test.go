@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/astralyx/lino/internal/cli"
+	"github.com/astralyx/lino/internal/index"
 	_ "github.com/astralyx/lino/internal/search"
 	_ "github.com/astralyx/lino/internal/statuscmd"
 )
@@ -56,6 +57,26 @@ func TestExternalFoundOutsideWatcher(t *testing.T) {
 			}
 			if es[0].Source != SourceExternal || es[0].Kind != tt.kind || !reflect.DeepEqual(es[0].Ranges, tt.ranges) {
 				t.Fatalf("entry %+v", es[0])
+			}
+		})
+	}
+}
+
+func TestFromUpdateSkipsIgnoredRemoval(t *testing.T) {
+	tests := []struct {
+		name string
+		u    index.Update
+		ok   bool
+	}{
+		{"deleted", index.Update{Path: "a", Op: index.Removed, OldHash: "abc"}, true},
+		{"now ignored", index.Update{Path: "a", Op: index.Removed, OldHash: "abc", Ignored: true}, false},
+		{"added", index.Update{Path: "a", Op: index.Added, Hash: "abc"}, true},
+		{"unchanged", index.Update{Path: "a", Op: index.Unchanged}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if _, ok := FromUpdate(tt.u); ok != tt.ok {
+				t.Errorf("FromUpdate ok = %v, want %v", ok, tt.ok)
 			}
 		})
 	}

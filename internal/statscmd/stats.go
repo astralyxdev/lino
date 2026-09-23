@@ -87,8 +87,13 @@ type HistStats struct {
 	Changes       int64 `json:"changes"`
 	FragmentBytes int64 `json:"fragment_bytes"`
 	DBBytes       int64 `json:"db_bytes"`
-	Per1000       int64 `json:"bytes_per_1000_changes"` // db bytes per 1,000 changes
+	// Per1000 projects fragment bytes to 1,000 changes; nil below MinProjection
+	// changes, where fixed costs and one-off edits would dominate.
+	Per1000 *int64 `json:"bytes_per_1000_changes,omitempty"`
 }
+
+// MinProjection is the fewest changes a per-1,000 projection is made from.
+const MinProjection = 100
 
 // Rate is the share of mutating calls that ended with Outcome.
 type Rate struct {
@@ -202,10 +207,16 @@ func histStats(ctx context.Context, root string, h *HistStats) error {
 		return err
 	}
 	h.DBBytes = dbSize(history.Path(root))
-	if h.Changes > 0 {
-		h.Per1000 = h.DBBytes * 1000 / h.Changes
-	}
+	h.Per1000 = per1000(h.FragmentBytes, h.Changes)
 	return nil
+}
+
+func per1000(fragBytes, changes int64) *int64 {
+	if changes < MinProjection {
+		return nil
+	}
+	n := fragBytes * 1000 / changes
+	return &n
 }
 
 func fillMetrics(d *Data, s *metrics.Stats) {
@@ -259,9 +270,12 @@ func (d Data) WriteText(w io.Writer) error {
 	}
 	p("index", "%d files, %d lines, %d binary, index.db %s", d.Index.Files, d.Index.Lines, d.Index.Binary, size(d.Index.DBBytes))
 	h := d.History
-	if h.Changes > 0 {
-		p("history", "%d changes, history.db %s, %s per 1,000 changes, fragments %s", h.Changes, size(h.DBBytes), size(h.Per1000), size(h.FragmentBytes))
-	} else {
+	switch {
+	case h.Per1000 != nil:
+		p("history", "%d changes, history.db %s, fragments %s (~%s per 1,000 changes)", h.Changes, size(h.DBBytes), size(h.FragmentBytes), size(*h.Per1000))
+	case h.Changes > 0:
+		p("history", "%d changes, history.db %s, fragments %s", h.Changes, size(h.DBBytes), size(h.FragmentBytes))
+	default:
 		p("history", "0 changes, history.db %s", size(h.DBBytes))
 	}
 	if d.Since == nil {

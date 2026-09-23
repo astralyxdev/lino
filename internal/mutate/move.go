@@ -102,6 +102,7 @@ func (p *Pipeline) moveLocked(ctx context.Context, req MoveRequest, fromRel, fro
 	}
 	syncDir(filepath.Dir(fromReal))
 	syncDir(filepath.Dir(toReal))
+	fileio.PruneEmptyDirs(p.Root.Path(), filepath.Dir(fromReal))
 
 	op := req.Op
 	if op == "" {

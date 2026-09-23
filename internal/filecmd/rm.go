@@ -170,6 +170,7 @@ func rmLocked(ctx context.Context, p *mutate.Pipeline, rel, real, abs string, re
 		dir.Sync()
 		dir.Close()
 	}
+	fileio.PruneEmptyDirs(p.Root.Path(), filepath.Dir(target))
 	c := &mutate.Commit{Result: mutate.Result{Path: rel, Op: "rm", By: req.By, OldV: d.OldV}, Real: target, Before: d.Data, Mode: lst.Mode().Perm()}
 	if err := p.RunHooks(ctx, c); err != nil {
 		return output.Result{Outcome: outcome.OK, Data: d}, err

@@ -4,7 +4,7 @@ exit 0
 root  $ROOT
 id  $ID
 process  not running
-index  1 files, 3 lines, 0 binary, index.db <size>
-history  0 changes, history.db <size>
+index  2 files, 25 lines, 0 binary, index.db <size>
+history  1 changes, history.db <size>, fragments <size>
 metrics  none collected yet
 -- stderr --

@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/astralyx/lino/internal/cli"
 	"github.com/astralyx/lino/internal/filecmd"
@@ -23,7 +24,7 @@ var Command = &cli.Command{
 	Summary: "find lines containing a string, from the index",
 	Accept:  cli.File,
 	MinArgs: 1,
-	MaxArgs: 1,
+	MaxArgs: -1,
 	Setup: func(fs *flag.FlagSet) cli.RunFunc {
 		words := fs.Bool("words", false, "rank files by BM25 over word tokens")
 		regex := fs.Bool("regex", false, "match lines with a Go regexp")
@@ -31,11 +32,30 @@ var Command = &cli.Command{
 		fs.Var(&paths, "path", "limit to paths matching this glob (repeatable)")
 		k := fs.Int("k", 0, "maximum hits")
 		ctxLines := fs.Int("C", 0, "context lines around each hit")
+		anchors := fs.Bool("anchors", false, "not supported; read the hit lines with --anchors")
 		return func(ctx context.Context, c *cli.Call) (output.Result, error) {
-			return Search(ctx, c.Cwd, Request{Query: c.Arg(0), Words: *words, Regex: *regex,
+			if *anchors {
+				return output.Result{}, outcome.New(outcome.Usage, "search has no --anchors").
+					WithHint("lino read <file> --lines A:B --anchors")
+			}
+			query, err := joinQuery(c.Args, *words)
+			if err != nil {
+				return output.Result{}, err
+			}
+			return Search(ctx, c.Cwd, Request{Query: query, Words: *words, Regex: *regex,
 				Paths: paths, K: *k, Context: *ctxLines})
 		}
 	},
+}
+
+// joinQuery builds the query from positional args: --words joins them with
+// spaces; literal and --regex take exactly one.
+func joinQuery(args []string, words bool) (string, error) {
+	if words || len(args) == 1 {
+		return strings.Join(args, " "), nil
+	}
+	return "", outcome.New(outcome.Usage, "search: too many arguments").
+		WithHint(`quote a multi-word query: lino search "a b"`)
 }
 
 // Request is one search call.

@@ -10,6 +10,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"path/filepath"
 	"runtime"
 	"sort"
 	"sync"
@@ -145,6 +146,10 @@ func (d *DB) Reconcile(ctx context.Context, rules *ignore.Rules, maxSize int64) 
 		if err != nil {
 			w.abort()
 			return sum, fmt.Errorf("unindex %s: %w", p, err)
+		}
+		if u.Op == Removed {
+			_, err := os.Lstat(filepath.Join(rules.Root(), filepath.FromSlash(p)))
+			u.Ignored = err == nil
 		}
 		sum.add(u)
 	}

@@ -3,6 +3,7 @@ package metrics
 import (
 	"context"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/astralyx/lino/internal/index"
@@ -107,12 +108,23 @@ func middleware(p *live.Process, h server.Handler) server.Handler {
 	}
 	return func(ctx context.Context, req *proto.Request) (output.Result, error) {
 		t0 := time.Now()
-		res, err := h(ctx, req)
+		var waited atomic.Int64
+		res, err := h(context.WithValue(ctx, waitKey{}, &waited), req)
 		o := res.Outcome
 		if err != nil {
 			o = outcome.Of(err)
 		}
-		c.Observe(req.Command, o, time.Since(t0))
+		c.Observe(req.Command, o, max(time.Since(t0)-time.Duration(waited.Load()), 0))
 		return res, err
+	}
+}
+
+type waitKey struct{}
+
+// Waited records time a call spent idle by request, such as `changes --wait`
+// holding for events; it is left out of the call's latency.
+func Waited(ctx context.Context, d time.Duration) {
+	if w, _ := ctx.Value(waitKey{}).(*atomic.Int64); w != nil {
+		w.Add(int64(d))
 	}
 }

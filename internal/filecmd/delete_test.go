@@ -39,6 +39,9 @@ func TestDelete(t *testing.T) {
 		{"missing --v", five, "1", "1", "-", 6, "", ""},
 		{"stale --v", five, "1", "1", version.Of([]byte("other")), 6, "", "1:"},
 		{"bad anchor", five, "x", "1", "", 2, "", ""},
+		{"single anchor", five, a(2, five), "", "", 0, "l1\nl3\nl4\nl5\n", "deleted lines 2-2"},
+		{"single anchor relocated", five, "1:" + anchor.Hash("l4"), "", "", 0, "l1\nl2\nl3\nl5\n", "deleted lines 4-4"},
+		{"single anchor stale", five, "2:" + anchor.Hash("gone"), "", "", 4, "", "2:"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -47,7 +50,10 @@ func TestDelete(t *testing.T) {
 			if err := os.WriteFile(p, []byte(tt.content), 0o640); err != nil {
 				t.Fatal(err)
 			}
-			args := []string{"delete", "f.txt", tt.start, tt.end}
+			args := []string{"delete", "f.txt", tt.start}
+			if tt.end != "" {
+				args = append(args, tt.end)
+			}
 			switch tt.v {
 			case "":
 				args = append(args, "--v", version.Of([]byte(tt.content)))
@@ -110,7 +116,7 @@ func TestDeleteJSON(t *testing.T) {
 
 func TestDeleteArgCount(t *testing.T) {
 	root := testRoot(t)
-	for _, args := range [][]string{{"delete", "a.go", "1"}, {"delete", "a.go", "1", "2", "3"}} {
+	for _, args := range [][]string{{"delete", "a.go"}, {"delete", "a.go", "1", "2", "3"}} {
 		if _, _, code := run(t, root, args...); code != 2 {
 			t.Fatalf("%v: exit %d, want 2", args, code)
 		}

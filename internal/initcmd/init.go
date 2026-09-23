@@ -18,6 +18,7 @@ import (
 
 	"github.com/astralyx/lino/internal/cli"
 	"github.com/astralyx/lino/internal/config"
+	"github.com/astralyx/lino/internal/filecmd"
 	"github.com/astralyx/lino/internal/fileio"
 	"github.com/astralyx/lino/internal/ignore"
 	"github.com/astralyx/lino/internal/index"
@@ -34,11 +35,12 @@ var Command = &cli.Command{
 	Name:    "init",
 	Usage:   "[dir]",
 	Summary: "create .lino/ and build the index",
+	Accept:  cli.AcceptBy,
 	MinArgs: 0,
 	MaxArgs: 1,
 	Setup: func(fs *flag.FlagSet) cli.RunFunc {
 		return func(ctx context.Context, c *cli.Call) (output.Result, error) {
-			return Init(ctx, c.Cwd, c.Arg(0))
+			return Run(ctx, Request{Cwd: c.Cwd, Dir: c.Arg(0), Linoignore: true, By: c.By})
 		}
 	},
 }
@@ -54,7 +56,9 @@ type Data struct {
 	Modified    int    `json:"modified"`
 	Removed     int    `json:"removed"`
 	Moved       int    `json:"moved"`
-	DurationMS  int64  `json:"duration_ms"`
+	// CreatedLinoignore is set when init wrote the default .linoignore.
+	CreatedLinoignore bool  `json:"created_linoignore,omitempty"`
+	DurationMS        int64 `json:"duration_ms"`
 }
 
 // WriteText prints a short summary and the next step.
@@ -62,6 +66,11 @@ func (d Data) WriteText(w io.Writer) error {
 	verb := "initialised"
 	if d.Existed {
 		verb = "already initialised"
+	}
+	if d.CreatedLinoignore {
+		if _, err := fmt.Fprintln(w, "created .linoignore with defaults"); err != nil {
+			return err
+		}
 	}
 	_, err := fmt.Fprintf(w, "%s %s id=%s\nindexed %d files (%d added, %d modified, %d removed, %d moved) in %dms\nnext: lino run %s\n",
 		verb, d.Root, d.ID, d.Files, d.Added, d.Modified, d.Removed, d.Moved, d.DurationMS, d.Root)
@@ -86,9 +95,27 @@ func DefaultConfig() string {
 `, c.ReadLines, c.SearchHits, c.SearchMaxHits, c.LineChars, c.LsEntries, c.ChangesEvents)
 }
 
-// Init initialises dir (relative to cwd; "" means cwd). Re-running it on an
+// Request is one init call.
+type Request struct {
+	Cwd string
+	Dir string // relative to Cwd; "" means Cwd
+	// Linoignore writes the default .linoignore when the root has none,
+	// before the first reconcile so its patterns apply to the initial index,
+	// and logs it as a lino write by By. An existing file is never touched.
+	Linoignore bool
+	By         string
+}
+
+// Init initialises dir (relative to cwd; "" means cwd) without creating a
+// .linoignore; the command runs Run with Linoignore set. Re-running it on an
 // initialised root is safe: it only reconciles the index again.
 func Init(ctx context.Context, cwd, dir string) (output.Result, error) {
+	return Run(ctx, Request{Cwd: cwd, Dir: dir})
+}
+
+// Run initialises the root described by req; see Request and Init.
+func Run(ctx context.Context, req Request) (output.Result, error) {
+	cwd, dir := req.Cwd, req.Dir
 	if cwd == "" {
 		wd, err := os.Getwd()
 		if err != nil {
@@ -140,10 +167,21 @@ func Init(ctx context.Context, cwd, dir string) (output.Result, error) {
 		return output.Result{}, outcome.Wrap(outcome.Internal, err, "git exclude: "+err.Error())
 	}
 
+	if req.Linoignore {
+		if d.CreatedLinoignore, err = ignore.EnsureLinoignore(rp); err != nil {
+			return output.Result{}, outcome.Wrap(outcome.Internal, err, "create .linoignore: "+err.Error())
+		}
+	}
+
 	start := time.Now()
 	sum, err := reconcile(ctx, rp, cfg.MaxFileSize)
 	if err != nil {
 		return output.Result{}, outcome.Wrap(outcome.Internal, err, "index: "+err.Error())
+	}
+	if d.CreatedLinoignore {
+		if err := filecmd.RecordCreated(ctx, rp, ignore.LinoignoreFile, req.By); err != nil {
+			return output.Result{}, outcome.Wrap(outcome.Internal, err, "record .linoignore: "+err.Error())
+		}
 	}
 	d.Files, d.Added, d.Modified, d.Removed, d.Moved = sum.Files, sum.Added, sum.Modified, sum.Removed, sum.Moved
 	d.DurationMS = time.Since(start).Milliseconds()

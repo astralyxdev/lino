@@ -210,9 +210,9 @@ lino status                                  # index and watcher state, pending 
 lino index                                   # force a full reconcile
 
 lino read <file> [--lines A:B] [--anchors]
-lino edit <file> <start> <end> --v V         # replace range; new lines from stdin
+lino edit <file> <start> [<end>] --v V       # replace line or range; new lines from stdin
 lino insert <file> (--before A | --after A | --at-start | --at-end) --v V   # stdin
-lino delete <file> <start> <end> --v V       # delete range
+lino delete <file> <start> [<end>] --v V     # delete line or range
 lino replace <file> --v V                    # exact unique match; old and new from stdin
 lino write <file> [--v V | --force]          # create, or overwrite with --v / --force
 lino mv <from> <to>

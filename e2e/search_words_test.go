@@ -1,6 +1,8 @@
 package e2e
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestSearchWords(t *testing.T) {
 	tests := []struct {
@@ -12,6 +14,8 @@ func TestSearchWords(t *testing.T) {
 		{"search_words_path", Cmd{Args: []string{"search", "--words", "withdraw", "--path", "wallet/**", "--direct"}}, 0},
 		{"search_words_context", Cmd{Args: []string{"search", "--words", "withdraw", "-C", "1", "--path", "docs/**", "--direct"}}, 0},
 		{"search_words_none", Cmd{Args: []string{"search", "--words", "zebra", "--direct"}}, 0},
+		{"search_words_unquoted", Cmd{Args: []string{"search", "--words", "invalid", "amount", "--direct"}}, 0},
+		{"search_literal_two_args", Cmd{Args: []string{"search", "invalid", "amount", "--direct"}}, 2},
 		{"search_words_regex", Cmd{Args: []string{"search", "--words", "--regex", "x", "--direct"}}, 2},
 	}
 	for _, tt := range tests {
@@ -23,5 +27,15 @@ func TestSearchWords(t *testing.T) {
 			h.ExpectExit(r, tt.exit)
 			h.Golden(tt.name, r)
 		})
+	}
+}
+
+func TestSearchWordsUnquotedMatchesQuoted(t *testing.T) {
+	h := NewInit(t).Fixture("wallet")
+	quoted := h.Run("search", "--words", "invalid amount", "--direct")
+	unquoted := h.Run("search", "--words", "invalid", "amount", "--direct")
+	h.ExpectExit(unquoted, 0)
+	if quoted.Stdout != unquoted.Stdout || quoted.Stderr != unquoted.Stderr {
+		t.Errorf("unquoted differs from quoted\n--- quoted\n%s--- unquoted\n%s", h.Transcript(quoted), h.Transcript(unquoted))
 	}
 }

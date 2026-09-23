@@ -95,3 +95,30 @@ func TestDirectWhileLive(t *testing.T) {
 	expectGone(t, h, done)
 	h.ExpectExit(h.Run("read", "a.txt", "--direct"), 0)
 }
+
+func TestAutoStartKeepsName(t *testing.T) {
+	h := New(t)
+	h.Home = shortHome(t)
+	h.Write("a.txt", "one\n")
+	h.ExpectExit(h.Run("init"), 0)
+	t.Cleanup(func() { h.Run("stop") })
+
+	h.ExpectExit(h.Run("run", "--name", "demo"), 0)
+	h.ExpectExit(h.Run("stop", "-i", "demo"), 0)
+	h.ExpectExit(h.Run("read", "a.txt"), 0)
+	if e, ok := liveEntry(t, h); !ok || e.Name != "demo" {
+		t.Fatalf("auto-started entry %+v live=%v, want name demo", e, ok)
+	}
+	if r := h.Run("ps"); !strings.Contains(r.Stdout, "demo") {
+		t.Errorf("ps does not show demo:\n%s", h.Transcript(r))
+	}
+	h.ExpectExit(h.Run("stop", "-i", "demo"), 0)
+
+	h.ExpectExit(h.Run("run", "--name", "other"), 0)
+	h.ExpectExit(h.Run("stop", "-i", "other"), 0)
+	h.ExpectExit(h.Run("run"), 0)
+	if e, ok := liveEntry(t, h); !ok || e.Name != "other" {
+		t.Fatalf("plain run entry %+v live=%v, want name other", e, ok)
+	}
+	h.ExpectExit(h.Run("stop", "-i", "other"), 0)
+}

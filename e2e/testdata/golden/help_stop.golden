@@ -1,0 +1,8 @@
+$ lino help stop
+exit 0
+-- stdout --
+usage: lino stop
+global flags:
+  -i, --id ID|NAME  target the live process with this id or name
+  --json            JSON output
+-- stderr --

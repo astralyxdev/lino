@@ -9,6 +9,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -16,6 +17,7 @@ import (
 
 	"github.com/astralyx/lino/internal/cli"
 	"github.com/astralyx/lino/internal/config"
+	"github.com/astralyx/lino/internal/filecmd"
 	"github.com/astralyx/lino/internal/ignore"
 	"github.com/astralyx/lino/internal/index"
 	"github.com/astralyx/lino/internal/outcome"
@@ -38,6 +40,11 @@ type Options struct {
 	Idle     time.Duration      // idle exit after this long without calls; 0 = never (enforced by idle exit)
 	Registry *registry.Registry // nil = registry.Default()
 	Commands *cli.Registry      // nil = cli.Default
+	// Created lists root-relative files lino wrote just before Start (the
+	// default .linoignore); they are logged as lino writes by By, not as
+	// external edits.
+	Created []string
+	By      string
 }
 
 // Process is a started live process.
@@ -62,6 +69,8 @@ type Process struct {
 	watching atomic.Bool
 	watch    *watcher
 	idleExit atomic.Bool
+	// storedName is set when Name came from .lino/name, not --name.
+	storedName bool
 }
 
 // SetWatching records whether the file watcher is running. While it is,
@@ -129,15 +138,26 @@ func Start(ctx context.Context, opt Options) (*Process, error) {
 		Root: root, ID: registry.IDFor(root), Name: opt.Name, Idle: opt.Idle,
 		Versions: vcache.New(0), reg: reg, cmds: cmds, serveErr: make(chan error, 1),
 	}
+	if p.Name == "" {
+		p.Name, p.storedName = StoredName(root), true
+	}
 	if err := p.open(ctx); err != nil {
 		return nil, err
+	}
+	if opt.Name != "" {
+		saveName(p.Root, opt.Name)
 	}
 	reindex.Open = p.reindexTarget
 	vcache.Register(p.Root, p.Versions)
 	// Changes made while no process ran are external edits; a freshly built
 	// index has nothing to compare against.
-	if OnExternal != nil && !p.DB.Rebuilt && len(p.Startup.Changes) > 0 {
-		OnExternal(ctx, p, p.Startup.Changes)
+	ext := withoutPaths(p.Startup.Changes, opt.Created)
+	if OnExternal != nil && !p.DB.Rebuilt && len(ext) > 0 {
+		OnExternal(ctx, p, ext)
+	}
+	for _, rel := range opt.Created {
+		// The file is indexed either way; a failure only loses its log entry.
+		_ = filecmd.RecordCreated(ctx, p.Root, rel, opt.By)
 	}
 	p.startWatcher()
 	for _, f := range OnStart {
@@ -183,10 +203,31 @@ func (p *Process) open(ctx context.Context) (err error) {
 		return err
 	}
 	p.Started = time.Now()
-	return p.reg.Write(registry.Entry{
+	e := registry.Entry{
 		ID: p.ID, PID: os.Getpid(), Root: p.Root, Socket: sock,
 		Started: p.Started, Version: BuildVersion, Name: p.Name,
-	})
+	}
+	err = p.reg.Write(e)
+	if outcome.Is(err, outcome.Refused) && p.storedName && p.Name != "" {
+		// A saved alias taken by another process must not block the start.
+		p.Name, e.Name = "", ""
+		err = p.reg.Write(e)
+	}
+	return err
+}
+
+// withoutPaths returns ups without the updates for paths.
+func withoutPaths(ups []index.Update, paths []string) []index.Update {
+	if len(paths) == 0 {
+		return ups
+	}
+	out := make([]index.Update, 0, len(ups))
+	for _, u := range ups {
+		if !slices.Contains(paths, u.Path) {
+			out = append(out, u)
+		}
+	}
+	return out
 }
 
 // Server returns the socket server (for activity and shutdown hooks).

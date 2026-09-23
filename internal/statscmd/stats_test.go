@@ -1,6 +1,7 @@
 package statscmd
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -58,4 +59,45 @@ func TestFillMetricsRates(t *testing.T) {
 			t.Errorf("rate %+v, want %v", r, w)
 		}
 	}
+}
+
+func TestHistoryProjection(t *testing.T) {
+	for _, c := range []struct {
+		name    string
+		h       HistStats
+		want    *int64
+		wantTxt string
+	}{
+		{"none", HistStats{DBBytes: 4096}, nil, "history   0 changes, history.db 4.0K\n"},
+		{"small sample", HistStats{Changes: 22, FragmentBytes: 2200, DBBytes: 483 << 10}, nil,
+			"history   22 changes, history.db 483K, fragments 2.1K\n"},
+		{"enough", HistStats{Changes: 200, FragmentBytes: 20_000, DBBytes: 1 << 20}, ptr(100_000),
+			"history   200 changes, history.db 1.0M, fragments 20K (~98K per 1,000 changes)\n"},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			got := per1000(c.h.FragmentBytes, c.h.Changes)
+			if (got == nil) != (c.want == nil) || got != nil && *got != *c.want {
+				t.Fatalf("per1000 = %v, want %v", got, c.want)
+			}
+			c.h.Per1000 = got
+			var b strings.Builder
+			if err := (Data{History: c.h}).WriteText(&b); err != nil {
+				t.Fatal(err)
+			}
+			if line := historyLine(b.String()); line != c.wantTxt {
+				t.Errorf("history line %q, want %q", line, c.wantTxt)
+			}
+		})
+	}
+}
+
+func ptr(n int64) *int64 { return &n }
+
+func historyLine(s string) string {
+	for _, l := range strings.SplitAfter(s, "\n") {
+		if strings.HasPrefix(l, "history") {
+			return l
+		}
+	}
+	return ""
 }

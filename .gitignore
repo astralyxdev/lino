@@ -3,3 +3,4 @@ dist/
 /lino
 .lino/
 bench/.corpus/
+/demo_test/

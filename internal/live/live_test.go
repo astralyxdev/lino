@@ -159,3 +159,53 @@ func TestStartErrors(t *testing.T) {
 		})
 	}
 }
+
+func TestStoredName(t *testing.T) {
+	for _, tc := range []struct{ file, want string }{
+		{"", ""},
+		{"demo\n", "demo"},
+		{"  demo  ", "demo"},
+		{"bad name\n", ""},
+	} {
+		root := t.TempDir()
+		if err := os.Mkdir(filepath.Join(root, ".lino"), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if tc.file != "" {
+			if err := os.WriteFile(namePath(root), []byte(tc.file), 0o644); err != nil {
+				t.Fatal(err)
+			}
+		}
+		if got := StoredName(root); got != tc.want {
+			t.Errorf("file %q: StoredName = %q, want %q", tc.file, got, tc.want)
+		}
+	}
+}
+
+func TestStoredNameTakenFallsBack(t *testing.T) {
+	reg := &registry.Registry{Dir: filepath.Join(shortTemp(t, "lh"), "run")}
+	a := initRoot(t, map[string]string{"a.txt": "a\n"})
+	b := initRoot(t, map[string]string{"b.txt": "b\n"})
+	pa, err := Start(context.Background(), Options{Dir: a, Name: "demo", Registry: reg})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { pa.Stop(context.Background()) })
+	if got := StoredName(a); got != "demo" {
+		t.Fatalf("StoredName = %q, want demo", got)
+	}
+	if err := saveName(b, "demo"); err != nil {
+		t.Fatal(err)
+	}
+	pb, err := Start(context.Background(), Options{Dir: b, Registry: reg})
+	if err != nil {
+		t.Fatalf("start with taken stored name: %v", err)
+	}
+	t.Cleanup(func() { pb.Stop(context.Background()) })
+	if pb.Name != "" {
+		t.Errorf("name %q, want none", pb.Name)
+	}
+	if got := StoredName(b); got != "demo" {
+		t.Errorf("stored name changed to %q", got)
+	}
+}

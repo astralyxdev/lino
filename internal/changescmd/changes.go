@@ -17,6 +17,7 @@ import (
 	"github.com/astralyx/lino/internal/config"
 	"github.com/astralyx/lino/internal/filecmd"
 	"github.com/astralyx/lino/internal/live"
+	"github.com/astralyx/lino/internal/metrics"
 	"github.com/astralyx/lino/internal/outcome"
 	"github.com/astralyx/lino/internal/output"
 	"github.com/astralyx/lino/internal/search"
@@ -113,7 +114,9 @@ func Run(ctx context.Context, cwd string, req Request) (output.Result, error) {
 		return output.Result{}, outcome.Wrap(outcome.Internal, err, "")
 	}
 	if len(evs) == 0 && req.Wait > 0 {
+		t0 := time.Now()
 		evs, more, latest, err = wait(ctx, log, changed, max(latest, req.Since), globs, ws.Config.ChangesEvents, req.Wait)
+		metrics.Waited(ctx, time.Since(t0))
 		if err != nil {
 			return output.Result{}, err
 		}
