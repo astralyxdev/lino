@@ -155,7 +155,10 @@ func Start(ctx context.Context, opt Options) (*Process, error) {
 // open takes the socket first, so a second process for the root fails with
 // live_exists before touching the index; then reconciles and registers.
 func (p *Process) open(ctx context.Context) (err error) {
-	sock := p.reg.SocketPath(p.ID)
+	sock, err := p.reg.PrepareSocket(p.ID)
+	if err != nil {
+		return err
+	}
 	if p.ln, err = server.Listen(sock); err != nil {
 		return err
 	}

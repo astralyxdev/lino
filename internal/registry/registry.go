@@ -69,9 +69,6 @@ func Default() (*Registry, error) {
 // EntryPath returns the JSON path for id.
 func (r *Registry) EntryPath(id string) string { return filepath.Join(r.Dir, id+".json") }
 
-// SocketPath returns the socket path for id.
-func (r *Registry) SocketPath(id string) string { return filepath.Join(r.Dir, id+".sock") }
-
 var nameRe = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$`)
 
 // ValidName reports whether s is an acceptable --name alias.
