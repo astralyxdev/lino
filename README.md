@@ -48,3 +48,7 @@ make build    # CGO_ENABLED=0 go build ./cmd/lino
 make test
 make dist     # static binaries for linux/darwin × amd64/arm64 plus checksums.txt
 ```
+
+## License
+
+MIT — see [LICENSE](LICENSE).
