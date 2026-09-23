@@ -14,7 +14,6 @@ package vcheck
 
 import (
 	"context"
-	"os"
 	"path/filepath"
 
 	"github.com/astralyx/lino/internal/filecmd"
@@ -23,6 +22,7 @@ import (
 	"github.com/astralyx/lino/internal/histrec"
 	"github.com/astralyx/lino/internal/linediff"
 	"github.com/astralyx/lino/internal/mutate"
+	"github.com/astralyx/lino/internal/paths"
 	"github.com/astralyx/lino/internal/reindex"
 	"github.com/astralyx/lino/internal/version"
 )
@@ -85,7 +85,7 @@ func lookup(ctx context.Context, f *fileio.File, v string) ([]string, bool) {
 
 func findRoot(p string) (string, bool) {
 	for dir := filepath.Dir(p); ; {
-		if st, err := os.Stat(filepath.Join(dir, fileio.MetaDir)); err == nil && st.IsDir() {
+		if paths.IsRoot(dir) {
 			return dir, true
 		}
 		parent := filepath.Dir(dir)

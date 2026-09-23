@@ -2,17 +2,16 @@ package changelog
 
 import (
 	"context"
-	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/astralyx/lino/internal/filecmd"
-	"github.com/astralyx/lino/internal/fileio"
 	"github.com/astralyx/lino/internal/index"
 	"github.com/astralyx/lino/internal/linediff"
 	"github.com/astralyx/lino/internal/live"
 	"github.com/astralyx/lino/internal/mutate"
+	"github.com/astralyx/lino/internal/paths"
 	"github.com/astralyx/lino/internal/reindex"
 	"github.com/astralyx/lino/internal/textfile"
 	"github.com/astralyx/lino/internal/version"
@@ -247,7 +246,7 @@ func short(hash string) string {
 
 func findRoot(p string) (string, bool) {
 	for dir := filepath.Dir(p); ; {
-		if st, err := os.Stat(filepath.Join(dir, fileio.MetaDir)); err == nil && st.IsDir() {
+		if paths.IsRoot(dir) {
 			return dir, true
 		}
 		parent := filepath.Dir(dir)

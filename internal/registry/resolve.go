@@ -1,7 +1,6 @@
 package registry
 
 import (
-	"os"
 	"path/filepath"
 
 	"github.com/astralyx/lino/internal/outcome"
@@ -82,10 +81,8 @@ func (r *Registry) FindRoot(dir string) (string, bool, error) {
 	}
 	for {
 		m := filepath.Join(d, MarkerDir)
-		if m != home {
-			if fi, err := os.Stat(m); err == nil && fi.IsDir() {
-				return d, true, nil
-			}
+		if m != home && paths.IsRoot(d) {
+			return d, true, nil
 		}
 		parent := filepath.Dir(d)
 		if parent == d {

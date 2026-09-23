@@ -12,10 +12,10 @@ import (
 
 	"github.com/astralyx/lino/internal/config"
 	"github.com/astralyx/lino/internal/filecmd"
-	"github.com/astralyx/lino/internal/fileio"
 	"github.com/astralyx/lino/internal/ignore"
 	"github.com/astralyx/lino/internal/index"
 	"github.com/astralyx/lino/internal/mutate"
+	"github.com/astralyx/lino/internal/paths"
 )
 
 func init() {
@@ -134,7 +134,7 @@ func Apply(ctx context.Context, t *Target, root string, c *mutate.Commit) error 
 // Nested roots are refused at init, so the nearest one is the root.
 func findRoot(p string) (string, bool) {
 	for dir := filepath.Dir(p); ; {
-		if st, err := os.Stat(filepath.Join(dir, fileio.MetaDir)); err == nil && st.IsDir() {
+		if paths.IsRoot(dir) {
 			return dir, true
 		}
 		parent := filepath.Dir(dir)

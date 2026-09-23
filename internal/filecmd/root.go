@@ -33,7 +33,7 @@ func FindRoot(cwd string) (*paths.Root, error) {
 		return nil, outcome.Wrap(outcome.Internal, err, "")
 	}
 	for dir := start; ; {
-		if st, err := os.Stat(filepath.Join(dir, fileio.MetaDir)); err == nil && st.IsDir() {
+		if paths.IsRoot(dir) {
 			r, err := paths.NewRoot(dir)
 			if err != nil {
 				return nil, outcome.Wrap(outcome.Internal, err, "")

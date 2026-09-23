@@ -171,7 +171,7 @@ func reconcile(ctx context.Context, root string, maxSize int64) (index.Summary, 
 // checkNesting refuses a root inside another initialised root or containing one.
 func checkNesting(root string) error {
 	for dir := filepath.Dir(root); ; dir = filepath.Dir(dir) {
-		if isMeta(filepath.Join(dir, fileio.MetaDir)) {
+		if paths.IsRoot(dir) {
 			return outcome.New(outcome.Refused, "%s is inside the lino root %s", root, dir).
 				WithHint("use the existing root, or remove " + filepath.Join(dir, fileio.MetaDir))
 		}
@@ -194,7 +194,7 @@ func checkNesting(root string) error {
 		case ignore.GitDir:
 			return fs.SkipDir
 		case fileio.MetaDir:
-			if filepath.Dir(p) != root {
+			if filepath.Dir(p) != root && paths.IsRoot(filepath.Dir(p)) {
 				nested = filepath.Dir(p)
 				return fs.SkipAll
 			}
