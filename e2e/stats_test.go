@@ -19,6 +19,9 @@ var statsVolatile = []struct {
 	{regexp.MustCompile(`\b\d+(\.\d+)?(µs|ms|s)\b`), "<dur>"},
 	{regexp.MustCompile(`\b\d+(\.\d+)?[BKMGT]\b`), "<size>"},
 	{regexp.MustCompile(` {2,}`), "  "},
+	// Current RSS is reported on Linux only; drop it so goldens match everywhere.
+	{regexp.MustCompile(`"rss_bytes":<n>,`), ""},
+	{regexp.MustCompile(`, rss <size>, peak`), ", peak"},
 }
 
 func maskStats(h *Harness, r Result) Result {
