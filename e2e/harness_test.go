@@ -22,8 +22,11 @@ import (
 
 var update = flag.Bool("update", false, "rewrite golden files")
 
-// linoBin is the path of the binary under test.
+// linoBin is the path of the binary under test; lino-core sits next to it.
 var linoBin string
+
+// coreBin is the lino-core next to linoBin: the binary live processes run.
+func coreBin() string { return filepath.Join(filepath.Dir(linoBin), "lino-core") }
 
 func TestMain(m *testing.M) {
 	flag.Parse()
@@ -52,7 +55,9 @@ func setup() (int, error) {
 		name += ".exe"
 	}
 	linoBin = filepath.Join(dir, name)
-	cmd := exec.Command("go", "build", "-o", linoBin, "github.com/astralyx/lino/cmd/lino")
+	// The thin client execs lino-core from its own directory.
+	cmd := exec.Command("go", "build", "-o", dir+string(filepath.Separator),
+		"github.com/astralyx/lino/cmd/lino", "github.com/astralyx/lino/cmd/lino-core")
 	cmd.Env = append(os.Environ(), "CGO_ENABLED=0")
 	if out, err := cmd.CombinedOutput(); err != nil {
 		return 1, fmt.Errorf("build lino: %v\n%s", err, out)

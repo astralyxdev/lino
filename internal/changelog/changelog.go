@@ -1,6 +1,10 @@
 // Package changelog records every file change, from lino or from outside, with
 // an increasing sequence number (its change id). The log lives in index.db;
 // callers hold their own position and read what came after it.
+//
+// The log shares index.db's durability (no fsync): a killed process loses
+// nothing, and after an OS crash the index is rebuilt and the log restarts
+// after the last id in history.db, so ids never repeat against history.
 package changelog
 
 import (
@@ -11,10 +15,12 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+	"weak"
 
 	"github.com/astralyx/lino/internal/history"
 	"github.com/astralyx/lino/internal/index"
@@ -86,14 +92,22 @@ type notifier struct {
 	ch chan struct{}
 }
 
-var notifiers sync.Map // index path -> *notifier
+var (
+	notifiers sync.Map // index path -> *notifier
+	opened    sync.Map // weak.Pointer[index.DB] -> *Log, dropped with the DB
+)
 
 // Open returns the change log stored in db, creating its tables on first use.
-// Logs opened on the same index path in this process share one notifier.
+// The schema is ensured once per *index.DB. Logs opened on the same index
+// path in this process share one notifier.
 //
 // The sequence continues after the highest id in history.db when the log is
 // new, so ids stay increasing even after index.db was rebuilt.
 func Open(ctx context.Context, db *index.DB) (*Log, error) {
+	key := weak.Make(db)
+	if l, ok := opened.Load(key); ok {
+		return l.(*Log), nil
+	}
 	for _, s := range schema {
 		if _, err := db.SQL.ExecContext(ctx, s); err != nil {
 			return nil, fmt.Errorf("changelog schema: %w", err)
@@ -114,7 +128,11 @@ func Open(ctx context.Context, db *index.DB) (*Log, error) {
 		}
 	}
 	nt, _ := notifiers.LoadOrStore(db.Path, &notifier{ch: make(chan struct{})})
-	return &Log{db: db.SQL, n: nt.(*notifier)}, nil
+	l, loaded := opened.LoadOrStore(key, &Log{db: db.SQL, n: nt.(*notifier)})
+	if !loaded {
+		runtime.AddCleanup(db, func(k weak.Pointer[index.DB]) { opened.Delete(k) }, key)
+	}
+	return l.(*Log), nil
 }
 
 func historyLatest(ctx context.Context, root string) (int64, error) {

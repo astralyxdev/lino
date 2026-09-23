@@ -364,3 +364,32 @@ func TestLive(t *testing.T) {
 		t.Fatal("external edit not recorded before the rollback")
 	}
 }
+
+// Many rounds of own edit, external write, rollback against a live process:
+// the external write must never be taken for part of the edit.
+func TestLiveStress(t *testing.T) {
+	tmp, err := os.MkdirTemp("", "rb")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { os.RemoveAll(tmp) })
+	e := setup(t, map[string]string{"f.txt": base})
+	ctx := context.Background()
+	p, err := live.Start(ctx, live.Options{Dir: e.root, Registry: &registry.Registry{Dir: filepath.Join(tmp, "run")}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		p.Stop(ctx)
+		reindex.Open = reindex.Direct
+	})
+	for i := range 30 {
+		before := e.read("f.txt")
+		a := e.ok(fmt.Sprintf("X%d\n", i), "edit", "f.txt", "3", "3", "--v", e.v("f.txt"))
+		e.writeDisk("f.txt", fmt.Sprintf("top%d\n", i)+e.read("f.txt"))
+		e.ok("", "rollback", id(a))
+		if got, want := e.read("f.txt"), fmt.Sprintf("top%d\n", i)+before; got != want {
+			t.Fatalf("round %d: content %q, want %q", i, got, want)
+		}
+	}
+}

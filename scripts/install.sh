@@ -10,7 +10,8 @@
 #   LINO_BASE_URL     download base holding the assets and checksums.txt
 #                     (default: https://github.com/$LINO_REPO/releases/download/$LINO_VERSION)
 #
-# The binary is verified against checksums.txt (SHA-256) before it is installed.
+# Installs lino and lino-core (which lino execs) into the same directory.
+# Both binaries are verified against checksums.txt (SHA-256) before either is installed.
 set -eu
 
 REPO=${LINO_REPO:-astralyxdev/lino}
@@ -100,39 +101,48 @@ main() {
 	[ -n "$VERSION" ] || VERSION=$(latest_version)
 	[ -n "$BASE_URL" ] || BASE_URL="https://github.com/$REPO/releases/download/$VERSION"
 	[ -n "$INSTALL_DIR" ] || INSTALL_DIR=$(default_dir)
-	asset="lino_${VERSION}_${os}_${arch}"
+	suffix="${VERSION}_${os}_${arch}"
 
 	tmp=$(mktemp -d 2>/dev/null || mktemp -d -t lino)
 	trap 'rm -rf "$tmp"' EXIT
 	trap 'exit 1' HUP INT TERM
 
-	say "downloading $asset ($VERSION)"
+	say "downloading lino and lino-core $suffix"
 	fetch "$BASE_URL/checksums.txt" "$tmp/checksums.txt" || die "cannot download $BASE_URL/checksums.txt"
-	fetch "$BASE_URL/$asset" "$tmp/$asset" || die "cannot download $BASE_URL/$asset"
-
-	want=$(awk -v f="$asset" '$2 == f || $2 == "*" f { print $1; exit }' "$tmp/checksums.txt")
-	[ -n "$want" ] || die "checksums.txt has no entry for $asset"
-	got=$(sha256 "$tmp/$asset")
-	if [ "$got" != "$want" ]; then
-		say "CHECKSUM MISMATCH for $asset"
-		say "  expected $want"
-		say "  got      $got"
-		die "refusing to install; nothing was changed"
-	fi
-	say "checksum ok ($got)"
+	# lino is a thin client; it execs lino-core (index, live process) from
+	# its own directory. Both are verified before either is installed.
+	for cmd in lino-core lino; do
+		asset="${cmd}_$suffix"
+		fetch "$BASE_URL/$asset" "$tmp/$asset" || die "cannot download $BASE_URL/$asset"
+		want=$(awk -v f="$asset" '$2 == f || $2 == "*" f { print $1; exit }' "$tmp/checksums.txt")
+		[ -n "$want" ] || die "checksums.txt has no entry for $asset"
+		got=$(sha256 "$tmp/$asset")
+		if [ "$got" != "$want" ]; then
+			say "CHECKSUM MISMATCH for $asset"
+			say "  expected $want"
+			say "  got      $got"
+			die "refusing to install; nothing was changed"
+		fi
+		say "checksum ok $asset ($got)"
+	done
 
 	mkdir -p "$INSTALL_DIR" || die "cannot create $INSTALL_DIR"
 	[ -w "$INSTALL_DIR" ] || die "$INSTALL_DIR is not writable; set LINO_INSTALL_DIR or run as root"
-	chmod 755 "$tmp/$asset"
-	# Copy next to the target, then rename, so a running lino is never half-replaced.
-	cp "$tmp/$asset" "$INSTALL_DIR/.lino.new.$$" || die "cannot write to $INSTALL_DIR"
-	mv -f "$INSTALL_DIR/.lino.new.$$" "$INSTALL_DIR/lino" || {
-		rm -f "$INSTALL_DIR/.lino.new.$$"
-		die "cannot install into $INSTALL_DIR"
-	}
+	# Copy next to the target, then rename, so a running lino is never
+	# half-replaced; lino-core first, so the new client never meets an old core.
+	for cmd in lino-core lino; do
+		asset="${cmd}_$suffix"
+		chmod 755 "$tmp/$asset"
+		cp "$tmp/$asset" "$INSTALL_DIR/.$cmd.new.$$" || die "cannot write to $INSTALL_DIR"
+		mv -f "$INSTALL_DIR/.$cmd.new.$$" "$INSTALL_DIR/$cmd" || {
+			rm -f "$INSTALL_DIR/.$cmd.new.$$"
+			die "cannot install into $INSTALL_DIR"
+		}
+	done
 
-	say "installed $INSTALL_DIR/lino"
+	say "installed $INSTALL_DIR/lino and $INSTALL_DIR/lino-core"
 	"$INSTALL_DIR/lino" --version >&2 || die "installed binary does not run"
+	"$INSTALL_DIR/lino" help >/dev/null || die "installed lino cannot run lino-core"
 	case ":$PATH:" in
 	*":$INSTALL_DIR:"*) ;;
 	*) say "note: $INSTALL_DIR is not on your PATH; add it: export PATH=\"$INSTALL_DIR:\$PATH\"" ;;

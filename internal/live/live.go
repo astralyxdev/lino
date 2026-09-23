@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"net"
 	"os"
 	"path/filepath"
@@ -20,6 +21,7 @@ import (
 	"github.com/astralyx/lino/internal/filecmd"
 	"github.com/astralyx/lino/internal/ignore"
 	"github.com/astralyx/lino/internal/index"
+	"github.com/astralyx/lino/internal/mutate"
 	"github.com/astralyx/lino/internal/outcome"
 	"github.com/astralyx/lino/internal/output"
 	"github.com/astralyx/lino/internal/paths"
@@ -260,6 +262,7 @@ func (p *Process) cleanup() {
 	p.stopOnce.Do(func() {
 		p.stopWatcher()
 		vcache.Register(p.Root, nil)
+		mutate.RootLock(p.Root).Sync()
 		for _, f := range OnStop {
 			f(p)
 		}
@@ -274,7 +277,14 @@ func (p *Process) reindexTarget(ctx context.Context, root string) (*reindex.Targ
 	if root != p.Root {
 		return reindex.Direct(ctx, root)
 	}
-	return &reindex.Target{DB: p.DB, Rules: p.Rules, MaxSize: p.Config.MaxFileSize}, func() {}, nil
+	return &reindex.Target{
+		DB: p.DB, Rules: p.Rules, MaxSize: p.Config.MaxFileSize,
+		Defer: mutate.RootLock(p.Root).Defer,
+		Sync:  mutate.RootLock(p.Root).Sync,
+		OnError: func(err error) {
+			fmt.Fprintf(os.Stderr, "lino: re-index after edit: %v\n", err)
+		},
+	}, func() {}, nil
 }
 
 func inRoot(root, dir string) bool {
@@ -310,6 +320,8 @@ func (p *Process) handle(ctx context.Context, req *proto.Request) (output.Result
 	c.By = req.By
 	c.Direct = false
 	ctx = context.WithValue(ctx, servingKey{}, p)
+	// Own edits re-index after they return; everything after them sees them.
+	mutate.RootLock(p.Root).Sync()
 	if p.Watching() {
 		ctx = index.WithWatched(ctx)
 	}

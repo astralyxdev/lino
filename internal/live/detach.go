@@ -84,13 +84,13 @@ func startDetached(ctx context.Context, reg *registry.Registry, req RunRequest) 
 	}
 	defer unlock()
 	if d, ok := existing(reg, root); ok {
-		return output.Result{Data: d, Message: "already running"}, nil
+		return alreadyRunning(reg, d, req.Name)
 	}
 	msg, err := spawn(ctx, reg, root, id, req)
 	if err != nil {
 		if outcome.Is(err, outcome.LiveExists) {
 			if d, ok := existing(reg, root); ok {
-				return output.Result{Data: d, Message: "already running"}, nil
+				return alreadyRunning(reg, d, req.Name)
 			}
 		}
 		return output.Result{}, err

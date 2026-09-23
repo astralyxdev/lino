@@ -122,3 +122,32 @@ func TestAutoStartKeepsName(t *testing.T) {
 	}
 	h.ExpectExit(h.Run("stop", "-i", "other"), 0)
 }
+
+func TestRunNamesAutoStarted(t *testing.T) {
+	h := New(t)
+	h.Home = shortHome(t)
+	h.Write("a.txt", "one\n")
+	h.ExpectExit(h.Run("init"), 0)
+	t.Cleanup(func() { h.Run("stop") })
+
+	h.ExpectExit(h.Run("read", "a.txt"), 0)
+	e, ok := liveEntry(t, h)
+	if !ok || e.Name != "" {
+		t.Fatalf("auto-started entry %+v live=%v", e, ok)
+	}
+	r := h.Run("run", "--name", "demo")
+	h.ExpectExit(r, 0)
+	if !strings.Contains(r.Stderr+r.Stdout, "already running (named demo)") {
+		t.Errorf("run --name output:\n%s", h.Transcript(r))
+	}
+	if e2, ok := liveEntry(t, h); !ok || e2.Name != "demo" || e2.PID != e.PID {
+		t.Fatalf("entry after run --name %+v live=%v", e2, ok)
+	}
+	if r := h.Run("status", "-i", "demo"); !strings.Contains(r.Stdout, "(demo)") {
+		t.Errorf("status does not show demo:\n%s", h.Transcript(r))
+	}
+	h.ExpectExit(h.Run("stop", "-i", "demo"), 0)
+	if _, ok := liveEntry(t, h); ok {
+		t.Fatal("process still live after stop -i demo")
+	}
+}

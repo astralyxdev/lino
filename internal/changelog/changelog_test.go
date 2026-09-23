@@ -352,3 +352,33 @@ func TestDiffRanges(t *testing.T) {
 		})
 	}
 }
+
+// TestOpenCached: the log is opened once per *index.DB; another handle on
+// the same index gets its own Log sharing the sequence and notifier.
+func TestOpenCached(t *testing.T) {
+	ctx := context.Background()
+	root := initRoot(t, map[string]string{"a.txt": "a\n"})
+	l1, db1 := openLog(t, root)
+	again, err := Open(ctx, db1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if again != l1 {
+		t.Error("second Open on the same DB returned a new Log")
+	}
+	l2, _ := openLog(t, root)
+	if l2 == l1 || l2.n != l1.n {
+		t.Errorf("other DB: same log %v, same notifier %v", l2 == l1, l2.n == l1.n)
+	}
+	s1, err := l1.Append(ctx, Entry{Source: SourceLino, Path: "a.txt", Kind: Modified})
+	if err != nil {
+		t.Fatal(err)
+	}
+	s2, err := l2.Append(ctx, Entry{Source: SourceLino, Path: "a.txt", Kind: Modified})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s2 != s1+1 {
+		t.Errorf("seq %d then %d", s1, s2)
+	}
+}

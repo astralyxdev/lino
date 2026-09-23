@@ -63,7 +63,7 @@ func search(t *testing.T, root, q string) []string {
 	for i := 0; i+3 <= len(q); i++ {
 		terms = append(terms, `"`+strings.ToLower(q[i:i+3])+`"`)
 	}
-	rows, err := db.SQL.Query(`SELECT f.path, f.content FROM tri JOIN files f ON f.id = tri.rowid WHERE tri MATCH ? ORDER BY f.path`,
+	rows, err := db.SQL.Query(`SELECT f.path, f.content FROM files f WHERE f.id IN (`+index.MatchFiles+`) ORDER BY f.path`,
 		strings.Join(terms, " AND "))
 	if err != nil {
 		t.Fatal(err)
@@ -202,5 +202,72 @@ func TestNoIndexIsBuilt(t *testing.T) {
 func TestHookRegistered(t *testing.T) {
 	if len(filecmd.Hooks) == 0 {
 		t.Fatal("reindex hook not registered")
+	}
+}
+
+func TestDeferredReindex(t *testing.T) {
+	ctx := context.Background()
+	root := setup(t, map[string]string{"a.go": "package a\n\nvar Old = 1\n"}, true)
+	db, err := index.Open(ctx, root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	lock := mutate.RootLock(root)
+	deferred := 0
+	orig := Open
+	t.Cleanup(func() { Open = orig })
+	Open = func(context.Context, string) (*Target, func(), error) {
+		return &Target{DB: db, Defer: func(job func()) { deferred++; lock.Defer(job) }}, func() {}, nil
+	}
+	if _, err := filecmd.Edit(ctx, root, filecmd.EditRequest{Path: "a.go", Start: "3", End: "3",
+		V: v(t, root, "a.go"), Lines: []string{"var New = 2"}}); err != nil {
+		t.Fatal(err)
+	}
+	lock.Sync()
+	if deferred != 1 {
+		t.Errorf("deferred %d re-indexes, want 1", deferred)
+	}
+	if got := search(t, root, "New = 2"); !slices.Equal(got, []string{"a.go"}) {
+		t.Errorf("after sync: search = %v", got)
+	}
+	if got := search(t, root, "Old = 1"); got != nil {
+		t.Errorf("after sync: old text still found in %v", got)
+	}
+}
+
+// An external edit landing between an own edit and its deferred re-index must
+// still look external to the next stat refresh.
+func TestDeferredReindexKeepsLaterExternalEdit(t *testing.T) {
+	ctx := context.Background()
+	root := setup(t, map[string]string{"a.go": "package a\n\nvar Old = 1\n"}, true)
+	db, err := index.Open(ctx, root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	var jobs []func()
+	orig := Open
+	t.Cleanup(func() { Open = orig })
+	Open = func(context.Context, string) (*Target, func(), error) {
+		return &Target{DB: db, Defer: func(job func()) { jobs = append(jobs, job) }}, func() {}, nil
+	}
+	if _, err := filecmd.Edit(ctx, root, filecmd.EditRequest{Path: "a.go", Start: "3", End: "3",
+		V: v(t, root, "a.go"), Lines: []string{"var New = 2"}}); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "a.go"), []byte("// top\npackage a\n\nvar New = 2\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if len(jobs) != 1 {
+		t.Fatalf("deferred %d re-indexes, want 1", len(jobs))
+	}
+	jobs[0]()
+	ups, err := db.Refresh(ctx, root, []string{"a.go"}, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(ups) != 1 || ups[0].Op != index.Modified {
+		t.Fatalf("refresh after the deferred re-index: %+v, want the external edit", ups)
 	}
 }

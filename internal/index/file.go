@@ -160,15 +160,18 @@ func upsertTx(ctx context.Context, tx *sql.Tx, rel, hash string, s Stat, data []
 		lines = len(textfile.Parse(data).Lines)
 	}
 	if u.Op == Added {
-		_, err = tx.ExecContext(ctx,
-			`INSERT INTO files(path, hash, size, mtime, mode, lines, binary, content) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-			rel, hash, s.Size, s.ModTime.UnixNano(), int64(s.Mode), lines, boolInt(binary), content)
+		err = tx.QueryRowContext(ctx,
+			`INSERT INTO files(path, hash, size, mtime, mode, lines, binary, content) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
+			rel, hash, s.Size, s.ModTime.UnixNano(), int64(s.Mode), lines, boolInt(binary), content).Scan(&id)
 	} else {
 		_, err = tx.ExecContext(ctx,
 			`UPDATE files SET hash = ?, size = ?, mtime = ?, mode = ?, lines = ?, binary = ?, content = ? WHERE id = ?`,
 			hash, s.Size, s.ModTime.UnixNano(), int64(s.Mode), lines, boolInt(binary), content, id)
 	}
-	return u, err
+	if err != nil {
+		return u, err
+	}
+	return u, writeChunks(ctx, tx, id, u.Old, content)
 }
 
 // RemoveFile drops rel from the index. Op is Unchanged when it was not indexed.

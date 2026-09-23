@@ -91,7 +91,8 @@ func TestRunOne(t *testing.T) {
 	src := corpus(t)
 	work := t.TempDir()
 	lino := filepath.Join(work, "lino")
-	c := exec.Command("go", "build", "-o", lino, "github.com/astralyx/lino/cmd/lino")
+	c := exec.Command("go", "build", "-o", filepath.Dir(lino)+string(filepath.Separator),
+		"github.com/astralyx/lino/cmd/lino", "github.com/astralyx/lino/cmd/lino-core")
 	c.Env = append(os.Environ(), "CGO_ENABLED=0")
 	if out, err := c.CombinedOutput(); err != nil {
 		t.Fatalf("%v\n%s", err, out)

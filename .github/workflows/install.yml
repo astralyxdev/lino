@@ -4,9 +4,9 @@ name: install
 # every supported platform. Tampered binaries and bad checksums must be refused.
 on:
   push:
-    paths: ["scripts/**", "cmd/**", ".github/workflows/install.yml"]
+    paths: ["scripts/**", "cmd/**", "internal/thin/**", ".github/workflows/install.yml"]
   pull_request:
-    paths: ["scripts/**", "cmd/**", ".github/workflows/install.yml"]
+    paths: ["scripts/**", "cmd/**", "internal/thin/**", ".github/workflows/install.yml"]
   workflow_dispatch:
   workflow_call:
     inputs:

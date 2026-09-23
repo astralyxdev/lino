@@ -1,7 +1,8 @@
 #!/bin/sh
 # Tests scripts/install.sh against a local test release for this machine's
-# platform: a clean install must work, and a tampered binary, a wrong checksum
-# or a missing checksum entry must fail with nothing installed.
+# platform: a clean install must put lino and lino-core in place, and a tampered
+# or missing binary, a wrong checksum or a missing checksum entry must fail with
+# nothing installed.
 #
 #   scripts/test-install.sh             # builds the release with dist.sh
 #   DIST=path scripts/test-install.sh   # uses an existing release directory
@@ -45,7 +46,10 @@ run_install() {
 }
 
 expect_ok() {
-	if [ "$code" = 0 ] && [ -x "$dir/lino" ] && "$dir/lino" --version | grep -q "lino $VERSION"; then
+	if [ "$code" = 0 ] && [ -x "$dir/lino" ] && [ -x "$dir/lino-core" ] &&
+		"$dir/lino" --version | grep -q "lino $VERSION" &&
+		"$dir/lino-core" --version | grep -q "lino $VERSION" &&
+		"$dir/lino" help 2>&1 | grep -q "usage: lino"; then
 		pass "$1"
 	else
 		fail "$1 (exit $code)"
@@ -80,10 +84,13 @@ asset_of() {
 	echo "lino_${VERSION}_${os}_${arch}"
 }
 asset=$(asset_of)
-[ -f "$DIST/$asset" ] || {
-	echo "test release has no $asset" >&2
-	exit 1
-}
+core="lino-core${asset#lino}"
+for a in "$asset" "$core"; do
+	[ -f "$DIST/$a" ] || {
+		echo "test release has no $a" >&2
+		exit 1
+	}
+done
 
 run_install clean "file://$DIST"
 expect_ok "clean install ($asset)"
@@ -96,6 +103,16 @@ r=$(release tampered)
 printf 'x' >>"$r/$asset"
 run_install tampered "file://$r"
 expect_refused "tampered binary rejected" "CHECKSUM MISMATCH"
+
+r=$(release tamperedcore)
+printf 'x' >>"$r/$core"
+run_install tamperedcore "file://$r"
+expect_refused "tampered lino-core rejected" "CHECKSUM MISMATCH"
+
+r=$(release nocore)
+rm "$r/$core"
+run_install nocore "file://$r"
+expect_refused "missing lino-core rejected" "cannot download"
 
 r=$(release wrongsum)
 awk -v f="$asset" '{ if ($2 == f || $2 == "*" f) $1 = "0000000000000000000000000000000000000000000000000000000000000000"; print }' \

@@ -100,25 +100,88 @@ type Pipeline struct {
 	// Lock, when set, is held instead of the pipeline's own lock, so other
 	// writers of the root (the live process's watcher) can share it; see
 	// RootLock.
-	Lock *sync.Mutex
+	Lock sync.Locker
 
 	mu sync.Mutex
 }
 
-func (p *Pipeline) locker() *sync.Mutex {
+func (p *Pipeline) locker() sync.Locker {
 	if p.Lock != nil {
 		return p.Lock
 	}
 	return &p.mu
 }
 
-var rootLocks sync.Map // canonical root path -> *sync.Mutex
+var rootLocks sync.Map // canonical root path -> *Lock
 
 // RootLock returns the process-wide lock serialising writes to root: every
 // mutation (file write, re-index, history) and every watcher batch.
-func RootLock(root string) *sync.Mutex {
-	l, _ := rootLocks.LoadOrStore(root, &sync.Mutex{})
-	return l.(*sync.Mutex)
+func RootLock(root string) *Lock {
+	l, _ := rootLocks.LoadOrStore(root, &Lock{})
+	return l.(*Lock)
+}
+
+// Lock is a mutex with deferred work: jobs queued with Defer while holding it
+// run, in order, under the lock before the next holder proceeds, or soon after
+// Unlock in the background. Readers call Sync to see their effects.
+type Lock struct {
+	mu      sync.Mutex
+	pmu     sync.Mutex
+	pending []func()
+	unrun   int // jobs queued and not yet finished
+}
+
+// Lock acquires l and runs the jobs deferred by earlier holders.
+func (l *Lock) Lock() {
+	l.mu.Lock()
+	for {
+		l.pmu.Lock()
+		jobs := l.pending
+		l.pending = nil
+		l.pmu.Unlock()
+		if len(jobs) == 0 {
+			return
+		}
+		for _, j := range jobs {
+			j()
+			l.pmu.Lock()
+			l.unrun--
+			l.pmu.Unlock()
+		}
+	}
+}
+
+// Unlock releases l; deferred jobs then run in the background.
+func (l *Lock) Unlock() {
+	l.mu.Unlock()
+	if l.Pending() {
+		go l.Sync()
+	}
+}
+
+// Defer queues job to run under the lock after the current holder, who
+// must hold l, releases it.
+func (l *Lock) Defer(job func()) {
+	l.pmu.Lock()
+	l.pending = append(l.pending, job)
+	l.unrun++
+	l.pmu.Unlock()
+}
+
+// Pending reports whether deferred jobs are queued or still running.
+func (l *Lock) Pending() bool {
+	l.pmu.Lock()
+	defer l.pmu.Unlock()
+	return l.unrun > 0
+}
+
+// Sync waits until the jobs deferred so far have run. It is free when none
+// are pending.
+func (l *Lock) Sync() {
+	if l.Pending() {
+		l.Lock()
+		l.mu.Unlock()
+	}
 }
 
 // Run loads the file, checks --v, resolves the op's target, applies it,

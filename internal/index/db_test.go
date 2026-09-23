@@ -77,7 +77,6 @@ func TestFTSSync(t *testing.T) {
 		}
 	}
 	exec(`INSERT INTO files(path, hash, size, mtime, mode, lines, content) VALUES ('a.go', 'h1', 1, 1, 420, 1, 'alpha ErrInvalidAmount')`)
-	tri := `SELECT count(*) FROM tri WHERE tri MATCH ?`
 	words := `SELECT count(*) FROM words WHERE words MATCH ?`
 
 	tests := []struct {
@@ -87,9 +86,8 @@ func TestFTSSync(t *testing.T) {
 		query string
 		want  int
 	}{
-		{"trigram after insert", "", tri, `"Inv" AND "nva"`, 1},
 		{"words after insert", "", words, "alpha", 1},
-		{"path-only update keeps rows", `UPDATE files SET path = 'b.go' WHERE path = 'a.go'`, tri, `"Inv"`, 1},
+		{"path-only update keeps rows", `UPDATE files SET path = 'b.go' WHERE path = 'a.go'`, words, "alpha", 1},
 		{"content update replaces old", `UPDATE files SET content = 'beta' WHERE path = 'b.go'`, words, "alpha", 0},
 		{"content update adds new", "", words, "beta", 1},
 		{"delete removes", `DELETE FROM files`, words, "beta", 0},
@@ -178,31 +176,5 @@ func TestOpenCorruptRebuilds(t *testing.T) {
 func TestOpenMissingDir(t *testing.T) {
 	if _, err := Open(context.Background(), t.TempDir()); err == nil {
 		t.Fatal("want error without .lino dir")
-	}
-}
-
-func TestMigrateV1AddsStatIndex(t *testing.T) {
-	root := newRoot(t)
-	db := mustOpen(t, root)
-	if _, err := db.SQL.Exec(`DROP INDEX files_stat`); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := db.SQL.Exec(`UPDATE meta SET value = '1' WHERE key = 'schema_version'`); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := db.SQL.Exec(`INSERT INTO files(path, hash, size, mtime, mode, lines) VALUES ('a', 'h', 0, 0, 0, 0)`); err != nil {
-		t.Fatal(err)
-	}
-	db.Close()
-	db = mustOpen(t, root)
-	defer db.Close()
-	if db.Rebuilt {
-		t.Fatal("rebuilt instead of migrated")
-	}
-	if n := count(t, db, `SELECT count(*) FROM sqlite_master WHERE name = 'files_stat'`); n != 1 {
-		t.Fatalf("files_stat index missing")
-	}
-	if n := count(t, db, `SELECT count(*) FROM files`); n != 1 {
-		t.Fatalf("files = %d", n)
 	}
 }

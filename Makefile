@@ -7,7 +7,7 @@ LDFLAGS := -s -w -X main.version=$(VERSION) -X main.commit=$(COMMIT)
 .PHONY: build test lint fmt clean dist
 
 build:
-	go build -trimpath -ldflags '$(LDFLAGS)' -o bin/lino ./cmd/lino
+	go build -trimpath -ldflags '$(LDFLAGS)' -o bin/ ./cmd/lino ./cmd/lino-core
 
 test:
 	go test ./...

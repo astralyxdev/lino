@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -11,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/astralyx/lino/internal/cli"
+	"github.com/astralyx/lino/internal/filecmd"
 )
 
 var fixture = map[string]string{
@@ -148,8 +150,65 @@ func TestSearchLimit(t *testing.T) {
 	}
 	root := newRoot(t, map[string]string{".lino/config": "", "a.txt": b.String(), "b.txt": "needle\n"})
 	out, errOut, code := run(t, root, "search", "needle")
-	if code != 0 || !strings.HasSuffix(out, "20 hits in 1 file (index)\n") || !strings.Contains(errOut, "truncated at 20 hits") {
+	if code != 0 || !strings.HasSuffix(out, "20+ hits in 1+ files (index; stopped at -k 20)\n") || !strings.Contains(errOut, "truncated at 20 hits") {
 		t.Errorf("code=%d stdout=%q stderr=%q", code, out, errOut)
+	}
+}
+
+// TestRunBatches covers early stop across content batches: hits keep path
+// order, More is set only when a hit beyond Limit exists.
+func TestRunBatches(t *testing.T) {
+	files := map[string]string{".lino/config": "", "bin.dat": "needle\x00"}
+	var all []string
+	for i := 0; i < 150; i++ {
+		p := fmt.Sprintf("f%03d.txt", i)
+		files[p] = "x\nneedle\n"
+		all = append(all, p)
+	}
+	root := newRoot(t, files)
+	ws, err := filecmd.Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := context.Background()
+	db, err := OpenIndex(ctx, ws)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	tests := []struct {
+		name  string
+		query string
+		opt   Options
+		want  []string
+		more  bool
+	}{
+		{"no limit", "needle", Options{}, all, false},
+		{"stop mid batch", "needle", Options{Limit: 7}, all[:7], true},
+		{"stop late", "needle", Options{Limit: 100}, all[:100], true},
+		{"limit one short", "needle", Options{Limit: 149}, all[:149], true},
+		{"limit exact", "needle", Options{Limit: 150}, all, false},
+		{"path filter", "needle", Options{Limit: 5, Paths: []string{"f1*"}}, all[100:105], true},
+		{"scan", "ne", Options{Limit: 3}, all[:3], true},
+		{"scan all", "ne", Options{}, all, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r, err := Literal(ctx, db, tt.query, tt.opt)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var got []string
+			for _, h := range r.Hits {
+				if h.Line != 2 {
+					t.Errorf("%s: line %d", h.Path, h.Line)
+				}
+				got = append(got, h.Path)
+			}
+			if !reflect.DeepEqual(got, tt.want) || r.More != tt.more || r.Files != len(tt.want) {
+				t.Errorf("got %d hits in %d files more=%v, want %d more=%v", len(got), r.Files, r.More, len(tt.want), tt.more)
+			}
+		})
 	}
 }
 

@@ -4,6 +4,7 @@ package scenarios
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"fmt"
 	"os"
@@ -62,7 +63,7 @@ func searchLatency(ctx context.Context, e *harness.Env) ([]harness.Metric, error
 	rg := ripgrep()
 	rgVersion := ""
 	if rg == nil {
-		e.Logf("ripgrep not found (set LINO_BENCH_RG); skipping it")
+		e.Logf("ripgrep not found (set LINO_BENCH_RG or RG); skipping it")
 	} else {
 		c := rg()
 		c.Args = append(c.Args, "--version")
@@ -113,10 +114,11 @@ func searchLatency(ctx context.Context, e *harness.Env) ([]harness.Metric, error
 	return ms, nil
 }
 
-// ripgrep returns a command factory for rg, from LINO_BENCH_RG or PATH. A
-// multi-call binary is started with argv[0] "rg".
+// ripgrep returns a command factory for rg, from LINO_BENCH_RG, RG or PATH
+// (rg may be only a shell function there). A multi-call binary is started
+// with argv[0] "rg".
 func ripgrep() func() *exec.Cmd {
-	p := os.Getenv("LINO_BENCH_RG")
+	p := cmp.Or(os.Getenv("LINO_BENCH_RG"), os.Getenv("RG"))
 	if p == "" {
 		var err error
 		if p, err = exec.LookPath("rg"); err != nil {

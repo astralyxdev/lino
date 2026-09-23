@@ -44,10 +44,15 @@ in an agent's system prompt or `CLAUDE.md`. Add `--json` to any command for mach
 ## Build
 
 ```sh
-make build    # CGO_ENABLED=0 go build ./cmd/lino
+make build    # bin/lino and bin/lino-core (CGO_ENABLED=0)
 make test
 make dist     # static binaries for linux/darwin × amd64/arm64 plus checksums.txt
 ```
+
+`lino` is a thin client: it forwards calls to the live process and links no SQLite, so it
+starts about as fast as an empty Go program. Everything else — the live process, `--direct`,
+`init`, auto-start, help — runs in `lino-core`, which `lino` execs from its own directory
+(then `PATH`). Keep the two binaries together; you only ever type `lino`.
 
 ## License
 

@@ -1,5 +1,6 @@
 #!/bin/sh
-# Builds static lino binaries for every supported platform into dist/
+# Builds static binaries for every supported platform into dist/ — the thin
+# client lino_<v>_<os>_<arch> and lino-core_<v>_<os>_<arch>, which it execs —
 # and writes dist/checksums.txt (SHA-256).
 set -eu
 
@@ -16,17 +17,19 @@ mkdir -p "$OUT"
 for p in $PLATFORMS; do
 	os=${p%/*}
 	arch=${p#*/}
-	bin="lino_${VERSION}_${os}_${arch}"
-	echo "build $bin" >&2
-	CGO_ENABLED=0 GOOS=$os GOARCH=$arch go build -trimpath \
-		-ldflags "-s -w -X main.version=$VERSION -X main.commit=$COMMIT" \
-		-o "$OUT/$bin" ./cmd/lino
+	for cmd in lino lino-core; do
+		bin="${cmd}_${VERSION}_${os}_${arch}"
+		echo "build $bin" >&2
+		CGO_ENABLED=0 GOOS=$os GOARCH=$arch go build -trimpath \
+			-ldflags "-s -w -X main.version=$VERSION -X main.commit=$COMMIT" \
+			-o "$OUT/$bin" "./cmd/$cmd"
+	done
 done
 
 cd "$OUT"
 if command -v sha256sum >/dev/null 2>&1; then
-	sha256sum lino_* >checksums.txt
+	sha256sum lino_* lino-core_* >checksums.txt
 else
-	shasum -a 256 lino_* >checksums.txt
+	shasum -a 256 lino_* lino-core_* >checksums.txt
 fi
 cat checksums.txt

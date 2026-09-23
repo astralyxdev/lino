@@ -380,6 +380,15 @@ func create(ctx context.Context, db *sql.DB) error {
 		return err
 	}
 	defer tx.Rollback()
+	// Another process may have created it since we looked; the immediate
+	// transaction serialises the check.
+	var n int
+	if err := tx.QueryRowContext(ctx, `SELECT count(*) FROM sqlite_master`).Scan(&n); err != nil {
+		return err
+	}
+	if n > 0 {
+		return nil
+	}
 	for _, s := range schema {
 		if _, err := tx.ExecContext(ctx, s); err != nil {
 			return fmt.Errorf("history schema: %w", err)

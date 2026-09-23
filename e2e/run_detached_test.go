@@ -52,13 +52,13 @@ func stopOnCleanup(t *testing.T, h *Harness) {
 	})
 }
 
-// servers counts running `lino run <root> --foreground` processes.
+// servers counts running `lino-core run <root> --foreground` processes.
 func servers(t *testing.T, root string) int {
 	t.Helper()
 	out, _ := exec.Command("ps", "-Ao", "args").Output()
 	n := 0
 	for _, l := range strings.Split(string(out), "\n") {
-		if strings.Contains(l, linoBin+" run "+root+" --foreground") {
+		if strings.Contains(l, coreBin()+" run "+root+" --foreground") {
 			n++
 		}
 	}

@@ -136,7 +136,7 @@ func TestReconcile(t *testing.T) {
 	if n := count(t, db, `SELECT count(*) FROM files WHERE path LIKE '.lino/%'`); n != 0 {
 		t.Errorf(".lino indexed: %d rows", n)
 	}
-	if n := count(t, db, `SELECT count(*) FROM tri JOIN files ON files.id = tri.rowid WHERE tri MATCH '"Bet" AND "eta"' AND files.path = 'd/beta.go'`); n != 1 {
+	if n := count(t, db, `SELECT count(*) FROM files WHERE path = 'd/beta.go' AND id IN (`+MatchFiles+`)`, `"Bet" AND "eta"`); n != 1 {
 		t.Errorf("moved file not searchable under new path: %d", n)
 	}
 }

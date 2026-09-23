@@ -15,25 +15,23 @@ import (
 
 // SchemaVersion is the current index schema. Bump it when the schema changes;
 // add a Migrations entry to upgrade in place, otherwise the index is rebuilt.
-const SchemaVersion = 2
+const SchemaVersion = 3
 
 // Migration upgrades an index from version from to from+1 inside tx.
 type Migration func(ctx context.Context, tx *sql.Tx) error
 
 // Migrations maps a schema version to the step that upgrades it by one.
-var Migrations = map[int]Migration{
-	1: func(ctx context.Context, tx *sql.Tx) error {
-		_, err := tx.ExecContext(ctx, filesStatIndex)
-		return err
-	},
-}
+var Migrations = map[int]Migration{}
 
 // filesStatIndex covers RefreshAll's scan so it never reads file content pages.
 const filesStatIndex = `CREATE INDEX IF NOT EXISTS files_stat ON files(path, size, mtime)`
 
-// schema v2. files holds the current content of every text file (empty for
-// binary files); tri is an external-content FTS5 table over it and words a
-// contentless one, both kept in sync by triggers. Updating only path/mtime/mode does not re-tokenise.
+// schema v3. files holds the current content of every text file (empty for
+// binary files). tri is a contentless trigram FTS5 table over chunks of
+// ChunkLines lines (see chunk.go), written by upsertTx, so an edit
+// re-tokenises only the chunks it touches. words is a contentless per-file
+// table kept in sync by triggers. Updating only path/mtime/mode does not
+// re-tokenise.
 var schema = []string{
 	`CREATE TABLE meta(key TEXT PRIMARY KEY, value TEXT NOT NULL)`,
 	`CREATE TABLE files(
@@ -49,22 +47,31 @@ var schema = []string{
 	)`,
 	`CREATE INDEX files_hash ON files(hash)`,
 	filesStatIndex,
-	`CREATE VIRTUAL TABLE tri USING fts5(content, content='files', content_rowid='id', tokenize='trigram', detail=none)`,
+	// chunks: lines [start, start+lines) of a file, 0-based; the tri row with
+	// the same rowid holds their text.
+	`CREATE TABLE chunks(
+		id      INTEGER PRIMARY KEY,
+		file_id INTEGER NOT NULL,
+		start   INTEGER NOT NULL,
+		lines   INTEGER NOT NULL
+	)`,
+	`CREATE INDEX chunks_file ON chunks(file_id, start)`,
+	`CREATE VIRTUAL TABLE tri USING fts5(content, content='', contentless_delete=1, tokenize='trigram', detail=none)`,
 	// words is contentless: it indexes lino_words(content) (see words.go),
 	// which adds camelCase parts, so it cannot read back from files.
 	`CREATE VIRTUAL TABLE words USING fts5(content, content='', contentless_delete=1, tokenize='unicode61')`,
+	`CREATE TRIGGER chunks_ad AFTER DELETE ON chunks BEGIN
+		DELETE FROM tri WHERE rowid = old.id;
+	END`,
 	`CREATE TRIGGER files_ai AFTER INSERT ON files BEGIN
-		INSERT INTO tri(rowid, content) VALUES (new.id, new.content);
 		INSERT INTO words(rowid, content) VALUES (new.id, lino_words(new.content));
 	END`,
 	`CREATE TRIGGER files_ad AFTER DELETE ON files BEGIN
-		INSERT INTO tri(tri, rowid, content) VALUES ('delete', old.id, old.content);
+		DELETE FROM chunks WHERE file_id = old.id;
 		DELETE FROM words WHERE rowid = old.id;
 	END`,
 	`CREATE TRIGGER files_au AFTER UPDATE OF content ON files BEGIN
-		INSERT INTO tri(tri, rowid, content) VALUES ('delete', old.id, old.content);
 		DELETE FROM words WHERE rowid = old.id;
-		INSERT INTO tri(rowid, content) VALUES (new.id, new.content);
 		INSERT INTO words(rowid, content) VALUES (new.id, lino_words(new.content));
 	END`,
 }
@@ -72,7 +79,7 @@ var schema = []string{
 var pragmas = []string{
 	"busy_timeout(5000)",
 	"journal_mode(WAL)",
-	"synchronous(NORMAL)",
+	"synchronous(OFF)", // rebuildable; see guard.go for crash recovery
 	"cache_size(-65536)",
 	"mmap_size(268435456)",
 	"temp_store(MEMORY)",
@@ -85,6 +92,8 @@ type DB struct {
 	// Rebuilt is true when the index was created empty on this open (new,
 	// unreadable, or schema mismatch without a migration): run a full reconcile.
 	Rebuilt bool
+
+	guard *guard
 }
 
 // Path returns the index path for a root.
@@ -101,6 +110,31 @@ func OpenPath(ctx context.Context, path string) (*DB, error) {
 	if _, err := os.Stat(filepath.Dir(path)); err != nil {
 		return nil, fmt.Errorf("index dir: %w", err)
 	}
+	g, crashed, err := acquire(path)
+	if err != nil {
+		return nil, fmt.Errorf("index guard: %w", err)
+	}
+	var d *DB
+	if crashed {
+		d, err = rebuild(ctx, path)
+	} else {
+		d, err = openExisting(ctx, path)
+	}
+	if err == nil {
+		err = g.ready()
+	}
+	if err != nil {
+		if d != nil {
+			d.SQL.Close()
+		}
+		g.close()
+		return nil, err
+	}
+	d.guard = g
+	return d, nil
+}
+
+func openExisting(ctx context.Context, path string) (*DB, error) {
 	db, err := open(path)
 	if err != nil {
 		return rebuild(ctx, path)
@@ -124,8 +158,13 @@ func OpenPath(ctx context.Context, path string) (*DB, error) {
 	return rebuild(ctx, path)
 }
 
-// Close closes the database.
-func (d *DB) Close() error { return d.SQL.Close() }
+// Close closes the database; the last one open on the index syncs it to disk.
+func (d *DB) Close() error {
+	err := d.SQL.Close()
+	g := d.guard
+	d.guard = nil
+	return errors.Join(err, g.release())
+}
 
 // Version returns the schema version recorded in the index.
 func (d *DB) Version(ctx context.Context) (int, error) {

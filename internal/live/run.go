@@ -94,7 +94,7 @@ func Run(ctx context.Context, req RunRequest) (output.Result, error) {
 	if root, ok, err := reg.FindRoot(dirOrCwd(req.Dir)); err == nil && ok {
 		if d, ok := existing(reg, root); ok {
 			reportReady(ready, RunData{}, "", outcome.New(outcome.LiveExists, "already running"))
-			return output.Result{Data: d, Message: "already running"}, nil
+			return alreadyRunning(reg, d, req.Name)
 		}
 	}
 	var idle time.Duration

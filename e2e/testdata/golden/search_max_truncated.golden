@@ -202,7 +202,7 @@ hits/a.txt
   198 needle 985
   199 needle 990
   200 needle 995
-200 hits in 1 file (index)
+200+ hits in 1+ files (index; stopped at -k 200)
 -- stderr --
 truncated at 200 hits
 hint: narrow the query or add --path

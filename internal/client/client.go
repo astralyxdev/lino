@@ -88,6 +88,35 @@ func Call(ctx context.Context, c *cli.Call) (*proto.Response, error) {
 	return roundTrip(ctx, conn, e.ID, req)
 }
 
+// CallLive forwards c only when its target already has a reachable live
+// process. ok=false means nothing was sent and c's stdin is untouched, so the
+// caller can hand the call to a full lino (auto-start, errors, --direct).
+func CallLive(ctx context.Context, c *cli.Call) (resp *proto.Response, ok bool, err error) {
+	reg, err := Registry()
+	if err != nil {
+		return nil, false, nil
+	}
+	envID := ""
+	if c.Env != nil {
+		envID = c.Env("LINO_ID")
+	}
+	t, err := reg.Resolve(c.ID, envID, c.Cwd)
+	if err != nil || t.Entry == nil {
+		return nil, false, nil
+	}
+	conn, err := dial(ctx, t.Entry.Socket)
+	if err != nil {
+		return nil, false, nil
+	}
+	req, err := Request(c)
+	if err != nil {
+		conn.Close()
+		return nil, true, err
+	}
+	resp, err = roundTrip(ctx, conn, t.Entry.ID, req)
+	return resp, true, err
+}
+
 // Request builds the socket request for c. Stdin is read only for commands
 // marked Stdin, so a forwarded read or search never blocks on an open pipe.
 func Request(c *cli.Call) (*proto.Request, error) {

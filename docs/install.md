@@ -6,8 +6,10 @@ curl -fsSL https://raw.githubusercontent.com/astralyxdev/lino/main/scripts/insta
 
 `scripts/install.sh` is POSIX sh. It detects the OS (`linux`, `darwin`; WSL counts as Linux)
 and architecture (`amd64`, `arm64`; a Rosetta shell on Apple silicon gets `arm64`), downloads
-`lino_<version>_<os>_<arch>` and `checksums.txt` from the release, verifies the SHA-256 and
-only then installs. On a mismatch it prints both hashes, exits 1 and changes nothing.
+`lino_<version>_<os>_<arch>`, `lino-core_<version>_<os>_<arch>` and `checksums.txt` from the
+release, verifies both SHA-256 sums and only then installs `lino` and `lino-core` side by side
+(`lino` is the thin client and execs `lino-core` from its own directory). On a mismatch it
+prints both hashes, exits 1 and changes nothing.
 
 | Variable | Default |
 |---|---|
@@ -45,8 +47,9 @@ release has been published.
 ## Automated tests
 
 `scripts/test-install.sh` builds a test release (or uses `DIST=<dir>`) and runs the installer
-for the current platform: clean install, reinstall, and refusal with nothing installed for a
-tampered binary, a wrong checksum, a missing checksum entry, a missing `checksums.txt` and an
+for the current platform: clean install (both binaries, `lino help` reaching `lino-core`),
+reinstall, and refusal with nothing installed for a tampered `lino` or `lino-core`, a missing
+`lino-core`, a wrong checksum, a missing checksum entry, a missing `checksums.txt` and an
 unknown version. When `wget` and `python3` are available it also installs over HTTP with
 `curl` hidden from `PATH`.
 

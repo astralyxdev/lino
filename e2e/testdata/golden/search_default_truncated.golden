@@ -22,7 +22,7 @@ hits/a.txt
   18  needle 85
   19  needle 90
   20  needle 95
-20 hits in 1 file (index)
+20+ hits in 1+ files (index; stopped at -k 20)
 -- stderr --
 truncated at 20 hits
 hint: -k 40, or narrow with --path

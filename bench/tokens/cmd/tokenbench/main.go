@@ -87,7 +87,8 @@ func run(ctx context.Context, corpus, work, out, taskIDs, armList string, reps i
 	}
 	if lino == "" {
 		lino = filepath.Join(work, "lino")
-		c := exec.CommandContext(ctx, "go", "build", "-trimpath", "-o", lino, "github.com/astralyx/lino/cmd/lino")
+		c := exec.CommandContext(ctx, "go", "build", "-trimpath", "-o", filepath.Dir(lino)+string(filepath.Separator),
+			"github.com/astralyx/lino/cmd/lino", "github.com/astralyx/lino/cmd/lino-core")
 		c.Env = append(os.Environ(), "CGO_ENABLED=0")
 		if b, err := c.CombinedOutput(); err != nil {
 			return fmt.Errorf("build lino: %v\n%s", err, b)

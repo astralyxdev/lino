@@ -100,64 +100,144 @@ func TrigramMatch(lit string) string {
 	return strings.Join(terms, " AND ")
 }
 
-// Run verifies every line of the candidate files with m, in path order.
-// match is an FTS5 expression over the trigram table; "" scans all text files.
+// Batch sizes for loading candidate content: small first, since common
+// queries fill -k from the first few files, then growing.
+const (
+	firstBatch = 4
+	maxBatch   = 64
+)
+
+// Run verifies the lines of the candidate files with m, in path order.
+// match is an FTS5 expression over the trigram table, whose rows are file
+// chunks: a file is a candidate when one chunk satisfies it, which every
+// matching line's chunk does. "" scans all text
+// files. Candidates stream in path order and their content is loaded in
+// small batches, so the search stops as soon as Limit+1 hits are seen.
 func Run(ctx context.Context, db *index.DB, match string, m LineMatcher, opt Options) (Result, error) {
 	res := Result{Source: FromIndex, Hits: []Hit{}}
-	var (
-		rows *sql.Rows
-		err  error
-	)
+	tx, err := db.SQL.BeginTx(ctx, nil)
+	if err != nil {
+		return Result{}, fmt.Errorf("search: %w", err)
+	}
+	defer tx.Rollback()
+	// files_stat is ordered by path and covers id, so no candidate content
+	// is read or sorted up front. Binary files have empty content and so
+	// never match a trigram; loadContent skips them for scans.
+	var rows *sql.Rows
 	if match == "" {
 		res.Source = FromScan
 		res.Note = noteFor(opt)
-		rows, err = db.SQL.QueryContext(ctx, `SELECT path, content FROM files WHERE binary = 0 ORDER BY path`)
+		rows, err = tx.QueryContext(ctx, `SELECT id, path FROM files INDEXED BY files_stat ORDER BY path`)
 	} else {
-		rows, err = db.SQL.QueryContext(ctx, `SELECT path, content FROM files
-			WHERE binary = 0 AND id IN (SELECT rowid FROM tri WHERE tri MATCH ?) ORDER BY path`, match)
+		rows, err = tx.QueryContext(ctx, `SELECT id, path FROM files INDEXED BY files_stat
+			WHERE id IN (`+index.MatchFiles+`) ORDER BY path`, match)
 	}
 	if err != nil {
 		return Result{}, fmt.Errorf("search: %w", err)
 	}
 	defer rows.Close()
-	last := ""
-	for rows.Next() {
-		var path, content string
-		if err := rows.Scan(&path, &content); err != nil {
+
+	type cand struct {
+		id   int64
+		path string
+	}
+	var (
+		batch []cand
+		size  = firstBatch
+		last  string
+		stop  bool
+	)
+	verify := func() error {
+		ids := make([]int64, len(batch))
+		for i, c := range batch {
+			ids[i] = c.id
+		}
+		contents, err := loadContent(ctx, tx, ids)
+		if err != nil {
+			return err
+		}
+		for _, c := range batch {
+			content, ok := contents[c.id]
+			if !ok {
+				continue
+			}
+			first := len(res.Hits)
+			EachLine(content, func(n int, line string) bool {
+				if !m(line) {
+					return true
+				}
+				if opt.Limit > 0 && len(res.Hits) >= opt.Limit {
+					res.More, stop = true, true
+					return false
+				}
+				res.Hits = append(res.Hits, Hit{Path: c.path, Line: n, Text: line})
+				if c.path != last {
+					res.Files++
+					last = c.path
+				}
+				return true
+			})
+			addContext(content, res.Hits[first:], opt.Context)
+			if stop {
+				break
+			}
+		}
+		batch = batch[:0]
+		size = min(size*2, maxBatch)
+		return ctx.Err()
+	}
+	for !stop && rows.Next() {
+		var c cand
+		if err := rows.Scan(&c.id, &c.path); err != nil {
 			return Result{}, fmt.Errorf("search: %w", err)
 		}
-		if !MatchPath(opt.Paths, path) {
+		if !MatchPath(opt.Paths, c.path) {
 			continue
 		}
-		first := len(res.Hits)
-		stop := false
-		EachLine(content, func(n int, line string) bool {
-			if !m(line) {
-				return true
+		if batch = append(batch, c); len(batch) >= size {
+			if err := verify(); err != nil {
+				return Result{}, err
 			}
-			if opt.Limit > 0 && len(res.Hits) >= opt.Limit {
-				res.More, stop = true, true
-				return false
-			}
-			res.Hits = append(res.Hits, Hit{Path: path, Line: n, Text: line})
-			if path != last {
-				res.Files++
-				last = path
-			}
-			return true
-		})
-		addContext(content, res.Hits[first:], opt.Context)
-		if stop {
-			break
-		}
-		if err := ctx.Err(); err != nil {
-			return Result{}, err
 		}
 	}
 	if err := rows.Err(); err != nil {
 		return Result{}, fmt.Errorf("search: %w", err)
 	}
+	if !stop && len(batch) > 0 {
+		if err := verify(); err != nil {
+			return Result{}, err
+		}
+	}
 	return res, nil
+}
+
+// loadContent returns the content of the text files among ids.
+func loadContent(ctx context.Context, tx *sql.Tx, ids []int64) (map[int64]string, error) {
+	args := make([]any, len(ids))
+	for i, id := range ids {
+		args[i] = id
+	}
+	q := `SELECT id, content FROM files WHERE binary = 0 AND id IN (?` + strings.Repeat(",?", len(ids)-1) + `)`
+	rows, err := tx.QueryContext(ctx, q, args...)
+	if err != nil {
+		return nil, fmt.Errorf("search: %w", err)
+	}
+	defer rows.Close()
+	out := make(map[int64]string, len(ids))
+	for rows.Next() {
+		var (
+			id      int64
+			content string
+		)
+		if err := rows.Scan(&id, &content); err != nil {
+			return nil, fmt.Errorf("search: %w", err)
+		}
+		out[id] = content
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("search: %w", err)
+	}
+	return out, nil
 }
 
 // EachLine calls fn with every line of content (1-based, without "\n" or a

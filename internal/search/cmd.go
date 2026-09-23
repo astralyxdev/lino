@@ -86,8 +86,12 @@ func (d Data) WriteText(w io.Writer) error {
 	return err
 }
 
-// Footer is "N hits in M files (index)".
+// Footer is "N hits in M files (index)". A search stopped at -k does not
+// know the total, so it says "20+ hits in 3+ files (index; stopped at -k 20)".
 func (d Data) Footer() string {
+	if d.More {
+		return fmt.Sprintf("%d+ hits in %d+ files (%s; stopped at -k %d)", len(d.Hits), d.Files, d.Source, len(d.Hits))
+	}
 	return fmt.Sprintf("%s in %s (%s)", plural(len(d.Hits), "hit"), plural(d.Files, "file"), d.Source)
 }
 

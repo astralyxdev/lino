@@ -1,5 +1,6 @@
-// Package reindex updates the index synchronously after lino's own writes, so
-// a search right after an edit sees it. It registers itself as a file command
+// Package reindex updates the index after lino's own writes, so a search
+// right after an edit sees it: synchronously in direct mode, deferred until
+// the next reader in a live process. It registers itself as a file command
 // hook on import.
 package reindex
 
@@ -28,6 +29,13 @@ type Target struct {
 	DB      *index.DB
 	Rules   *ignore.Rules
 	MaxSize int64 // files larger than this are indexed by hash only; <= 0 = no limit
+	// Defer, when set, queues the re-index to run after the mutation returns
+	// (see mutate.Lock); readers must sync with it first. nil re-indexes now.
+	Defer func(job func())
+	// Sync waits for the deferred re-indexes queued so far; nil when Defer is.
+	Sync func()
+	// OnError receives failures of deferred re-indexes.
+	OnError func(err error)
 }
 
 // Opener returns the index target for a canonical root, or nil when the root
@@ -68,7 +76,8 @@ func Direct(ctx context.Context, root string) (*Target, func(), error) {
 // (opening the index included), e.g. for stats.
 var Observers []func(root string, d time.Duration)
 
-// Hook re-indexes the file a mutation touched, before the command returns.
+// Hook re-indexes the file a mutation touched, before the command returns or,
+// for a target with Defer, right after it.
 func Hook(ctx context.Context, c *mutate.Commit) error {
 	root, ok := findRoot(c.Real)
 	if !ok {
@@ -79,8 +88,44 @@ func Hook(ctx context.Context, c *mutate.Commit) error {
 	if err != nil || t == nil {
 		return err
 	}
+	if t.Defer != nil {
+		// The job must not read the disk: by the time it runs, an external
+		// edit may have landed there and would be indexed as this one.
+		if st, ok := snapshot(c); ok {
+			ctx = context.WithoutCancel(ctx)
+			t.Defer(func() {
+				defer release()
+				if err := apply(ctx, t, root, c, st, time.Now()); err != nil && t.OnError != nil {
+					t.OnError(err)
+				}
+			})
+			return nil
+		}
+	}
 	defer release()
-	if err := Apply(ctx, t, root, c); err != nil {
+	return apply(ctx, t, root, c, nil, t0)
+}
+
+// snapshot returns what a deferred re-index of c needs from disk, taken now;
+// ok is false when the re-index has to read the file.
+func snapshot(c *mutate.Commit) (st *index.Stat, ok bool) {
+	switch {
+	case c.Op == "mv" || c.From != "":
+		return nil, false
+	case c.Op == "rm" || c.Removed:
+		return nil, true
+	case c.After != nil:
+		fi, err := os.Stat(c.Real)
+		if err != nil {
+			return nil, false
+		}
+		return &index.Stat{Size: fi.Size(), ModTime: fi.ModTime(), Mode: fi.Mode().Perm()}, true
+	}
+	return nil, false
+}
+
+func apply(ctx context.Context, t *Target, root string, c *mutate.Commit, st *index.Stat, t0 time.Time) error {
+	if err := applyStat(ctx, t, root, c, st); err != nil {
 		return err
 	}
 	for _, o := range Observers {
@@ -91,6 +136,12 @@ func Hook(ctx context.Context, c *mutate.Commit) error {
 
 // Apply updates t for commit c in root.
 func Apply(ctx context.Context, t *Target, root string, c *mutate.Commit) error {
+	return applyStat(ctx, t, root, c, nil)
+}
+
+// applyStat is Apply with the stat of c.After's file taken earlier, or nil
+// to stat it now.
+func applyStat(ctx context.Context, t *Target, root string, c *mutate.Commit, st *index.Stat) error {
 	rel, err := filepath.Rel(root, c.Real)
 	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
 		return nil
@@ -117,12 +168,15 @@ func Apply(ctx context.Context, t *Target, root string, c *mutate.Commit) error 
 		_, err = t.DB.RemoveFile(ctx, rel)
 		return err
 	case c.After != nil:
-		st, err := os.Stat(c.Real)
-		if err != nil {
-			_, err = t.DB.IndexFile(ctx, rel, c.Real, t.MaxSize)
-			return err
+		if st == nil {
+			fi, err := os.Stat(c.Real)
+			if err != nil {
+				_, err = t.DB.IndexFile(ctx, rel, c.Real, t.MaxSize)
+				return err
+			}
+			st = &index.Stat{Size: fi.Size(), ModTime: fi.ModTime(), Mode: fi.Mode().Perm()}
 		}
-		_, err = t.DB.IndexData(ctx, rel, c.After, index.Stat{Size: st.Size(), ModTime: st.ModTime(), Mode: st.Mode().Perm()})
+		_, err = t.DB.IndexData(ctx, rel, c.After, *st)
 		return err
 	default:
 		_, err = t.DB.IndexFile(ctx, rel, c.Real, t.MaxSize)
@@ -157,6 +211,10 @@ func Refresh(ctx context.Context, root string, rels []string) error {
 		return err
 	}
 	defer release()
+	if t.Sync != nil {
+		// A pending own edit must not look like an external one.
+		t.Sync()
+	}
 	_, err = t.DB.Refresh(ctx, root, rels, t.MaxSize)
 	return err
 }

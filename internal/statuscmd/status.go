@@ -100,7 +100,7 @@ func summary(files, added, modified, removed, moved int) string {
 func Status(ctx context.Context, flagID, envID, cwd string) (output.Result, error) {
 	d := StatusData{now: time.Now(), Watcher: "none (no live process)"}
 	if p := live.FromContext(ctx); p != nil {
-		d.Root, d.ID, d.Name, d.Live, d.PID = p.Root, p.ID, p.Name, true, os.Getpid()
+		d.Root, d.ID, d.Name, d.Live, d.PID = p.Root, p.ID, p.CurrentName(), true, os.Getpid()
 		started := p.Started
 		d.Started = &started
 		d.Watcher = "not started"
